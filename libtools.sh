@@ -7,7 +7,7 @@
 #	set $log_datefmt variable to whatever the 'date' command accepts
 #	or set it to 'no' to log without date
 #
-log()
+function log()
 {
 	datefmtdefault="+%Y/%m/%d %H:%M:%S"
 	datestring=
@@ -33,8 +33,7 @@ log()
 	echo -e "${logargs}"
 }
 
-
-timestamp()
+function timestamp()
 {
 	date +%Y%m%d-%H%M-%S
 }

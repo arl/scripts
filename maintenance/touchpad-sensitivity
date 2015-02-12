@@ -1,3 +1,5 @@
+# this is not a script but a reminder on how to
+# modify a touchpad sensitivity
 #
 # FROM http://superuser.com/questions/229839/reduce-laptop-touch-pad-sensitivity-in-ubuntu
 #
@@ -6,6 +8,9 @@ xinput list
 
 # list properties of device, in out case 'ETPS/2 Elantech Touchpad'
 xinput list-props 'ETPS/2 Elantech Touchpad' | grep -i finger
+
+# in case this file is executed
+exit
 ==>
 		# these are the original values
         Synaptics Finger (267): 1, 1, 0

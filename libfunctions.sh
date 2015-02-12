@@ -2,7 +2,7 @@
 
 # to be used like this : 
 #	if is_integer $1; then echo yes; else echo no; fi
-is_integer()
+function is_integer()
 {
 	if [[ $1 =~ ^-?[0-9]+$ ]] ; then
 		return 0
