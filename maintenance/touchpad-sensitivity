@@ -1,0 +1,20 @@
+#
+# FROM http://superuser.com/questions/229839/reduce-laptop-touch-pad-sensitivity-in-ubuntu
+#
+# to list all input devices
+xinput list
+
+# list properties of device, in out case 'ETPS/2 Elantech Touchpad'
+xinput list-props 'ETPS/2 Elantech Touchpad' | grep -i finger
+==>
+		# these are the original values
+        Synaptics Finger (267): 1, 1, 0
+        Synaptics Two-Finger Pressure (273):    282
+        Synaptics Two-Finger Width (274):       7
+        Synaptics Two-Finger Scrolling (277):   1, 1
+
+
+# the first parameter controls release pressure, 
+# by increasing the second parameter, you require more finger pressure for the trackpad to respond.
+# the third is to detect a button press (I think).
+xinput set-prop 'ETPS/2 Elantech Touchpad' 'Synaptics Finger'  1, 20, 0
