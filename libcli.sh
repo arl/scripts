@@ -42,6 +42,26 @@ function asksure()
 	return $?
 }
 
+# press any key to continue
+# $1 : key expected to continue program execution
+#		or 'any' (default )
+function pressakey()
+{
+	key=${1:-'any'}
+	msg=${2:-"Press '$key' key to continue..."}
+
+	echo -en $msg
+
+	while read -s -r -n 1 key_pressed; do
+	  if [ $key == "any" ] || [ "$key" = "$key_pressed" ] ; then
+			break
+	  fi
+	done
+
+
+
+
+}
 
 # prints a progress bar of bar_len length
 # ex : progress_bar 3 10 20 T ' '
