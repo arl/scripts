@@ -58,9 +58,16 @@ function pressakey()
 	  fi
 	done
 
-
-
-
+}
+# TODO : remove waitforkey ==> pressakey() integrates and expand same functionality
+# do not return until user has pressed a key
+function waitforkey()
+{
+	while read -n 1 -s key; do
+	  if [[ $key = "${1}" ]] ; then
+		break
+	  fi
+	done
 }
 
 # prints a progress bar of bar_len length
@@ -96,5 +103,4 @@ function progress_bar()
 
 	echo -ne "$bar$remain$percent"'%\r'
 }
-
 
