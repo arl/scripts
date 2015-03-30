@@ -1,7 +1,7 @@
 #! /bin/bash
 . libcli.sh
 
-cd /home/panty/Documents/dev/ionic-site > /dev/null
+cd /home/panty/Documentation/ionic-site > /dev/null
 
 echo
 echo
