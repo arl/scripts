@@ -28,6 +28,7 @@ usage: mountdmg -t filesystem -d mount_dir [-p part_dir] dmg_file
                 -t              Type of filesystem to mount
                 -p              Directory where place dmg partition
                                 (default to current directory)
+                -v              Add more messages
                 -h              Print usage
 
 example:
@@ -42,16 +43,16 @@ scriptname=${0##*/}
 function cleanup()
 {
 popd > /dev/null
-echo $scriptname: cleaning up...
+#echo $scriptname: cleaning up...
 rm -rf $tmpdir
 }
 trap cleanup EXIT
-
+pushd . > /dev/null
  
 # default option values
 partdir=$(pwd)
 
-options=':ht:d:p:'
+options=':hvt:d:p:'
 while getopts $options option
 do
   case $option in
@@ -61,6 +62,7 @@ do
     h)    usage; exit;;
     \?)   echo "Unknown option: -$OPTARG" >&2; exit 1;;
     :)    echo "Missing option argument for -$OPTARG" >&2; exit 1;;
+    *)    echo "Not implemented option: $option" >&2; exit 1;;
   esac
 done
 shift $(($OPTIND - 1))
@@ -75,7 +77,6 @@ echo dmg is $1
 
 # create tmp dir and cd to it
 tmpdir=$(mktemp -d -t $scriptname.XXXXXXXXXX)
-pushd . > /dev/null
 cd $tmpdir > /dev/null
 
 # extract dmg file
