@@ -67,13 +67,11 @@ do
 done
 shift $(($OPTIND - 1))
 
-[[ -z "$fs" ]] && echo "-t is a mandatory option" >&2 && exit 1
-[[ -z "$mntdir" ]] && echo "-d is a mandatory option" >&2 && exit 1
-
-[[ $# -ne 1 ]] && echo "dmg_file must be provided" >&2 && exit 1
+[[ -z "$fs" ]] && usage && exit 1
+[[ -z "$mntdir" ]] && usage && exit 1
+[[ $# -ne 1 ]] && usage && exit 1
 
 dmg=$1
-echo dmg is $1
 
 # create tmp dir and cd to it
 tmpdir=$(mktemp -d -t $scriptname.XXXXXXXXXX)
@@ -86,7 +84,6 @@ cd $tmpdir > /dev/null
 for file in *; do
   if file "${file}" | grep -Eq -i 'macintosh|hfs' ; then
     # found mountable dir
-echo copy $file to $partdir
     cp "${file}" "${partdir}"
     sudo mount -t $fs -o loop "${file}" $mntdir
     [[ $? -ne 0 ]] && echo "$scriptname: error, couldn't mount $file" >&2 && exit 2
