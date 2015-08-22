@@ -1,0 +1,387 @@
+**82. Print the first line of a file (emulate head -1).**
+
+
+
+    perl -ne 'print; exit'
+
+
+This is the simplest one-liner so far. Here Perl reads in the first line into
+`$_` variable thanks to `-n` option, then it calls `print` statement that
+prints the contents of the `$_` variable. And then it just exists. That's it.
+The first line got printed and that's all we wanted.
+
+**83. Print the first 10 lines of a file (emulate head -10).**
+
+
+
+    perl -ne 'print if $. <= 10'
+
+
+This one-liner uses the `$.` [special variable][32]. This variable stands for
+"current line number." Each time Perl reads in the next line, it increments
+`$.` by one. Therefore it's very simple to understand what this one-liner
+does, it `print`s the line if the line number is equal to or less than 10.
+
+This one liner can also be written the other way around without use of `if`
+statement,
+
+
+
+    perl -ne '$. <= 10 && print'
+
+
+Here the `print` statement gets called only if `$. <= 10` boolean expression
+is true, and it's true only if current line number is less than or equal to
+10.
+
+**84. Print the last line of a file (emulate tail -1).**
+
+
+
+    perl -ne '$last = $_; END { print $last }'
+
+
+Printing the last line of the file is a bit tricker, because you always have
+to maintain the previous line in memory. In this one-liner we always save the
+current line in `$_` to `$last` variable. When Perl program ends, it always
+executes code in the `END` block. Now just before exiting it read in the last
+line, so when it quits, we `print $last` that prints the last line.
+
+Another way to do the same is,
+
+
+
+    perl -ne 'print if eof'
+
+
+This one-liner uses the `eof` function that returns 1 if the **next read**
+will return end of file. Since the next read after the last line in the file
+will really return eof, this one-liner does what it's supposed to do.
+
+**85. Print the last 10 lines of a file (emulate tail -10).**
+
+
+
+    perl -ne 'push @a, $_; @a = @a[@a-10..$#a]; END { print @a }'
+
+
+Now this is tricky. Here we push each line to the `@a` array, and then we
+replace with a slice of itself. We do `@a = @a[@a-10..$#a]`, which means,
+replace `@a` with last 10 elements of a. `@a-10` is evaluated in scalar
+context here and it returns number of elements in the array minus 10. `#$a` is
+the last index in the `@a` array. And `@a[@a-10..$#a]` takes the last 10
+elements of the array, so `@a` always contains just 10 last elements.
+
+Here is an example. Suppose `@a` contains `("line1", "line2", "line3",
+"line4")`. And let's say we want to print last 4 lines of the file. Now when
+we read the 5th line, the array becomes `("line1", "line2", "line3", "line4",
+"line5")`. At this moment `@a-4` is 1, because `@a` in scalar context is 5.
+The `$#a` however is 4 because that's the last index in the array. Now taking
+the slice, `@a[@a-4..$#a]` is `@a[1..4]`, which drops the front element from
+the array and the `@a` array becomes `("line2", "line3", "line4", "line5")`.
+
+**86. Print only lines that match a regular expression.**
+
+
+
+    perl -ne '/regex/ && print'
+
+
+Here `/regex/` is short for `$_ =~ /regex/`. Since the `-n` operator puts
+every line in `$_` variable the `/regex/` returns true on all lines that
+matched the regex. If that happened, `print` prints the line.
+
+**87. Print only lines that do not match a regular expression.**
+
+
+
+    perl -ne '!/regex/ && print'
+
+
+This is the same as the previous one-liner, except the regular expression
+match has been negated. So all the lines that don't match the regex get
+printed.
+
+**88. Print the line before a line that matches a regular expression.**
+
+
+
+    perl -ne '/regex/ && $last && print $last; $last = $_'
+
+
+In this one-liner every line gets saved to `$last` variable. Now when the next
+line matches `/regex/` and there has been a previous line `$last`, then it
+`print $last` prints the last line, and then it assigns the current line to
+the last line variable via `$last = $_`.
+
+**89. Print the line after a line that matches a regular expression.**
+
+
+
+    perl -ne 'if ($p) { print; $p = 0 } $p++ if /regex/'
+
+
+Here we set the variable `$p` if the line matches a regex. It indicates that
+the next line should be printed. Now when the next line is read in and `$p` is
+set, then that line gets printed and `$p` gets set to 0 again to reset the
+state.
+
+**90. Print lines that match regex AAA and regex BBB in any order.**
+
+
+
+    perl -ne '/AAA/ && /BBB/ && print'
+
+
+This one-liner is basically the same as one-liner #86 above. Here we test if a
+line matches two regular expressions instead of line. If a line matches both
+regexes, then it gets printed.
+
+**91. Print lines that don't match match regexes AAA and BBB.**
+
+
+
+    perl -ne '!/AAA/ && !/BBB/ && print'
+
+
+This one-liner is almost the same as one-liner #87. Here we test if a line
+doesn't match two regular expressions in any order. If it doesn't match
+`/AAA/` and it doesn't match `/BBB/`, then we `print` it.
+
+**92. Print lines that match regex AAA followed by regex BBB followed by
+CCC.**
+
+
+
+    perl -ne '/AAA.*BBB.*CCC/ && print'
+
+
+Here we simply chain regexes AAA, BBB and CCC with `.*`, which stands for
+match anything or nothing at all. If AAA is followed by BBB and that is
+followed by CCC then we print the line. It also matches AAABBBCCC with nothing
+in between the regexes.
+
+**93. Print lines that are 80 chars or longer.**
+
+
+
+    perl -ne 'print if length >= 80'
+
+
+This one-liner prints all lines that are 80 chars or longer. In Perl you can
+sometimes omit the brackets `()` for function calls. In this one we omitted
+brackets for `length` function call. In fact, `length`, `length()` and
+`length($_)` are the same.
+
+**94. Print lines that are less than 80 chars in length.**
+
+
+
+    perl -ne 'print if length < 80'
+
+
+This is the opposite of previous one-liner. It checks if the length of a line
+is less than 80 characters.
+
+**95. Print only line 13.**
+
+
+
+    perl -ne '$. == 13 && print && exit'
+
+
+As I explained in one-liner #83, the `$.` special variable stands for "current
+line number". So if `$.` has value 13, then we `print` the line and `exit`.
+
+**96. Print all lines except line 27.**
+
+
+
+    perl -ne '$. != 27 && print'
+
+
+Just like in previous one-liner, we check if the current line is line 27, if
+it's not then we `print` it, otherwise we skip it.
+
+Another way to write the same is to reverse `print` and `$. != 27` and use
+`if` statement,
+
+
+
+    perl -ne 'print if $. != 27'
+
+
+**97. Print only lines 13, 19 and 67.**
+
+
+
+    perl -ne 'print if $. == 13 || $. == 19 || $. == 67'
+
+
+If you have Perl 5.10 or later then you can use the `~~` smart match operator,
+
+
+
+    perl -ne 'print if int($.) ~~ (13, 19, 67)'
+
+
+The smart matching operator `~~` appeared only in Perl 5.10. You can do all
+kinds of smart matching with it, for example, check if two arrays are the
+same, if an array contains an element, and many other use cases (see `perldoc
+perlsyn`). In this particular one-liner we use `int($.) ~~ (13, 19, 67)` that
+determines if numeric value `$.` is in the list (13, 19, 69). It's basically
+short for, `grep { $_ == int($._) } (13, 19, 67)`. If the check succeeds the
+line gets `print`ed.
+
+**98. Print all lines between two regexes (including lines that match
+regex).**
+
+
+
+    perl -ne 'print if /regex1/../regex2/'
+
+
+This one-liner uses the flip-flop operator, which becomes true when a line
+matches `regex1` and becomes false after another line matches `regex2`.
+Therefore this one-liner prints all lines between (and including) lines that
+match `regex1` and `regex2`.
+
+**99. Print all lines from line 17 to line 30.**
+
+
+
+    perl -ne 'print if $. >= 17 && $. <= 30'
+
+
+This one-liner is very simple to understand. The `$.` variable stands for the
+current line number, so it checks if the current line number is greater than
+or equal to 17 and less than or equal to 30.
+
+I just thought of another way to write it,
+
+
+
+    perl -ne 'print if int($.) ~~ (17..30)'
+
+
+This is one-liner uses the Perl 5.10 (and later) smart matching operator `~~`.
+It basically says, is the current line number in the list (17, 18, 19, ...,
+30). If it is, the smart match succeeds and the line gets printed.
+
+You can write the same idea in older Perls as following,
+
+
+
+    perl -ne 'print if grep { $_ == $. } 17..30'
+
+
+What happens here is `grep` checks if the current line number is in the list
+(17, 18, ..., 30). If it is, it returns a list of just one element, and a list
+of one element is true, and the line gets printed. Otherwise `grep` returns
+the empty list, which is false, and nothing gets printed.
+
+**100. Print the longest line.**
+
+
+
+    perl -ne '$l = $_ if length($_) > length($l); END { print $l }'
+
+
+This one-liner keeps the longest line seen so far in the `$l` variable. In
+case the current line `$_` exceeds the length of currently longest line, it
+gets replaced. Just before exiting, the `END` block is executed and it prints
+the longest line `$l`.
+
+**101. Print the shortest line.**
+
+
+
+    perl -ne '$s = $_ if $. == 1; $s = $_ if length($_) < length($s); END {
+print $s }'
+
+
+This one-liner is the opposite of the previous one. But as we're finding the
+minimum and `$s` is not defined for the first line, we have to set it to first
+line explicitly. Otherwise it's the same just with the length check reversed
+`length($_) < length($s)`.
+
+**102. Print all lines that contain a number.**
+
+
+
+    perl -ne 'print if /\d/'
+
+
+This one-liner uses a regular expression `\d` that stands for "match a number"
+and checks if a line contains one. If it does, the check succeeds, and the
+line gets printed.
+
+**103. Find all lines that contain only a number.**
+
+
+
+    perl -ne 'print if /^\d+$/'
+
+
+This one-liner is very similar to the previous one, but instead of matching a
+number anywhere on the line, it anchors the match to the beginning of the
+line, and to the end of the line. The regular expression `^\d+$` means "match
+one or more numbers that start at the beginning of line and end at the end of
+the line".
+
+**104. Print all lines that contain only characters.**
+
+
+
+    perl -ne 'print if /^[[:alpha:]]+$/
+
+
+This one-liner checks if the line contains only characters and if it does, it
+`print`s it. Here the `[[:alpha:]]` stands for "match all characters". You
+could also write the same as `[a-zA-Z]` (if you live in ASCII world).
+
+**105. Print every second line.**
+
+
+
+    perl -ne 'print if $. % 2'
+
+
+This one-liner prints first, third, 5th, 7th, etc, line. It does so because
+`$. % 2` is true when the current line number is odd, and it's false when the
+current line number is even.
+
+**106. Print every second line, starting the second line.**
+
+
+
+    perl -ne 'print if $. % 2 == 0'
+
+
+This one-liner is very similar to the previous one but except printing 1st,
+3rd, 5th, etc, lines, it prints 2nd, 4th, 6th, etc, lines. It prints them
+because `$. % 2 == 0` is true when the current line number is 2, 4, 6, ....
+
+**107. Print all lines that repeat.**
+
+
+
+    perl -ne 'print if ++$a{$_} == 2'
+
+
+This one-liner keeps track of the lines it has seen so far and it also keeps
+the count of how many times it has seen the line before. If it sees the line
+the 2nd time, it prints it out because `++$a{$_} == 2` is true. If it sees the
+line more than 2 times, it just does nothing because the count for this line
+has gone beyond 2 and the result of the print check is false.
+
+**108. Print all unique lines.**
+
+
+
+    perl -ne 'print unless $a{$_}++'
+
+
+Here the lines get printed only if the hash value `$a{$_}` for the line is 0.
+Every time Perl reads in a line, it increments the value for the line and that
+makes sure that only never before seen lines get printed.

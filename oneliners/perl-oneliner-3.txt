@@ -1,0 +1,589 @@
+## Calculations
+
+**21. Check if a number is a prime.**
+
+
+    perl -lne '(1x$_) !~ /^1?$|^(11+?)\1+$/ && print "$_ is prime"'
+
+This one-liner uses an ingenious regular expression to detect if a given
+number is a prime or not. Don't take it too seriously, though. I included it
+for its artistic value.
+
+First, the number is converted in its unary representation by " (1x$_) ". For
+example, 5 gets converted into " 1x5 ", which is " 11111 ".
+
+Next, the unary number gets tested against the ingenious regular expression.
+If it _doesn't match_, the number is a prime, otherwise it's a composite.
+
+The regular expression works this way. It consists of two parts " ^1?$ " and "
+^(11+?)\1+$ ".
+
+The first part matches " 1 " and empty string. Clearly, empty string and 1 are
+not prime numbers, therefore this regular expression matches, which indicated
+that they are not prime numbers.
+
+The second part determines if two or more 1s repeatedly make up the whole
+number. If two or mores 1s repeatedly make up the whole number, the regex
+matches, which means that the number is composite. Otherwise it's a prime.
+
+Let's look at the second regex part on numbers 5 and 6.
+
+The number 5 in unary representation is " 11111 ". The " (11+?) " matches
+first two ones " 11 ". The back-reference " \1 " becomes " 11 " and the whole
+regex now becomes " ^11(11)+$ ". It can't match five ones, therefore it fails.
+But since it used " +? ", it backtracks and matches the first three ones " 111
+". The back-reference becomes " 111 " and the whole regex becomes "
+^111(111)+$ ". It doesn't match again. This repeats for " 1111 " and " 11111
+", which also don't match, therefore the whole regex doesn't match and the
+number is a prime.
+
+The number 4 in unary representation is " 1111 ". The " (11+?) " matches the
+first two ones " 11 ". The back-reference " \1 " becomes " 11 " and the regex
+becomes " ^11(11)+$ ". It matches the original string, therefore the number is
+not a prime.
+
+The " -lne " command line options have been explained in parts [one][25] and
+[two][28].
+
+**22. Print the sum of all the fields on a line.**
+
+
+    perl -MList::Util=sum -alne 'print sum @F'
+
+This one-liner turns on field auto-splitting with " -a " command line option
+and imports the "sum" function from "[List::Util][33]" module with "
+-MList::Util=sum " option. The "List::Util" is in the Perl core so you don't
+need to worry about installing it.
+
+As a result of auto-splitting the split fields end up in the " @F " array and
+the " sum " function just sums them up.
+
+The -Mmodule=arg option imports arg from module and is the same as writing:
+
+
+
+    use module qw(arg)
+
+
+This one-liner is equivalent to the following:
+
+
+
+    use List::Util qw(sum);
+
+    while (<>) {
+
+        @F = split(' ');
+
+        print sum @F, "\n";
+
+    }
+
+
+**23. Print the sum of all the fields on all lines.**
+
+
+    perl -MList::Util=sum -alne 'push @S,@F; END { print sum @S }'
+
+This one-liner keeps pushing the split fields in " @F " to the " @S " array.
+Once the input is over and perl is about quit, END { } block gets called that
+outputs the sum of all items in @F. This sum is the sum of all fields over all
+lines.
+
+This solution isn't too good - it creates a massive array @S. A better
+solution is to keep just the running:
+
+
+
+    perl -MList::Util=sum -alne '$s += sum @F; END { print $s }'
+
+
+**24. Shuffle all fields on a line.**
+
+
+    perl -MList::Util=shuffle -alne 'print "@{[shuffle @F]}"'
+
+This is almost the same as one-liner #22 above. Instead of summing all fields,
+it shuffles and prints them.
+
+The " @{[shuffle @F]} " construct creates an array reference to the contents
+of " shuffle @F " and " @ { ... } " dereferences it. This is a tricky way to
+execute code inside quotes. It was needed to get the values of shuffled @F
+separated by a space when printing them out.
+
+Another way to do the same is join the elements of @F by a space, but it's
+longer:
+
+
+    perl -MList::Util=shuffle -alne 'print join " ", shuffle @F'
+
+**25. Find the minimum element on a line.**
+
+
+    perl -MList::Util=min -alne 'print min @F'
+
+This one-liner uses the "min" function from "List::Util". It's similar to all
+the previous ones. After the line has been automatically split by " -a ", the
+"min" function finds minimum element and prints it.
+
+**26. Find the minimum element over all the lines.**
+
+
+    perl -MList::Util=min -alne '@M = (@M, @F); END { print min @M }'
+
+This one-liner is a combination of the previous one and the #23.
+
+The "@M = (@M, @F)" construct is the same as "push @M, @F". It appends the
+contents of @F to the array @M.
+
+This one-liner stores all the data in memory. If you run it on a 10 terabyte
+file, it will die. Therefore it's better to keep the running minimum element
+in memory and print it out at the end:
+
+
+
+    perl -MList::Util=min -alne '$min = min @F; $rmin = $min unless defined
+$rmin && $min > $rmin; END { print $rmin }'
+
+
+It finds the minimum of each line and stores in $min, then it checks if $min
+is smaller than the running minimum. Once the input ends, it prints the
+running minimum, which is the smallest value over all input.
+
+**27. Find the maximum element on a line.**
+
+
+    perl -MList::Util=max -alne 'print max @F'
+
+This is the same as #25, except "min" has been replaced with "max".
+
+**28. Find the maximum element over all the lines.**
+
+
+    perl -MList::Util=max -alne '@M = (@M, @F); END { print max @M }'
+
+This is the same as #26.
+
+Or:
+
+
+
+    perl -MList::Util=max -alne '$max = max @F; $rmax = $max unless defined
+$rmax && $max < $rmax; END { print $rmax }'
+
+
+**29. Replace each field with its absolute value.**
+
+
+    perl -alne 'print "@{[map { abs } @F]}"'
+
+This one-liner auto-splits the line by " -a " command line option. The split
+fields, as I already explained, end up in the @F variable. Next it calls the
+absolute value function "abs" on each field by the help of "map" function.
+Finally it prints it joins all the fields by the help of array interpolation
+in double quotes.
+
+The " @{ ... } " construct was explained in one-liner #24.
+
+**30. Find the total number of fields (words) on each line.**
+
+
+    perl -alne 'print scalar @F'
+
+This one-liner forces to evaluate the @F in scalar context, which in Perl
+means "the number of elements in @F." Therefore this one-liner prints out the
+number of elements on each line.
+
+**31. Print the total number of fields (words) on each line followed by the
+line.**
+
+
+    perl -alne 'print scalar @F, " $_"'
+
+This is exactly the same as #30, except " $_ " is added at the end that prints
+out the whole line. (Remember that " -n " option caused each line to be put in
+the $_ variable.)
+
+**32. Find the total number of fields (words) on all lines.**
+
+
+    perl -alne '$t += @F; END { print $t}'
+
+Here we just keep adding the number of fields on each line to variable " $t ",
+and at the end we print it out. The result is number of words on all lines.
+
+**33. Print the total number of fields that match a pattern.**
+
+
+    perl -alne 'map { /regex/ && $t++ } @F; END { print $t }'
+
+This one-liner uses the " map " function that applies some operation on each
+of the elements in @F array. In this case the operation checks if each element
+matches /regex/ and if it does, it increments variable $t. At the end it
+prints this variable $t that contains the number of fields that matched
+/regex/ pattern.
+
+A better way to do it is by looping:
+
+
+
+    perl -alne '$t += /regex/ for @F; END { print $t }'
+
+
+Each element in `@F` is tested against `regex`. If it matches, `/regex/`
+returns 1 (true), which gets added to variable `$t`. This way the number of
+matches get counted in `$t`.
+
+The best way is to use grep in scalar context:
+
+
+
+    perl -alne '$t += grep /regex/, @F; END { print $t }'
+
+
+Grep in scalar context returns the number of matches. This number gets
+accumulated in `$t`.
+
+**34. Print the total number of lines that match a pattern.**
+
+
+    perl -lne '/regex/ && $t++; END { print $t }'
+
+The `/regex/` evaluates to true if the current line of input matches this
+regular expression. Writing `/regex/ && $t++` is the same as `if ($_ =~
+/regex/) { $t++ }`, which increments variable `$t` if the line matched the
+pattern. Finally in the `END` block the variable `$t` contains the total
+number of pattern matches and it gets printed out.
+
+**35. Print the number PI to n decimal places.**
+
+
+    perl -Mbignum=bpi -le 'print bpi(21)'
+
+The [bignum][34] package exports **bpi** function that calculates constant PI
+to wanted accuracy. This one-liner prints PI to 20 decimal places.
+
+The bignum library also exports constant PI alone to 39 decimal places:
+
+
+    perl -Mbignum=PI -le 'print PI'
+
+**36. Print the number E to n decimal places.**
+
+
+    perl -Mbignum=bexp -le 'print bexp(1,21)'
+
+The bignum library also exports bexp function that takes two arguments - the
+power to raise e to and accuracy. This one-liner prints the constant e to 20
+decimal places.
+
+You can print the value of e^2 to 30 decimal places this way:
+
+
+    perl -Mbignum=bexp -le 'print bexp(2,31)'
+
+Just the same as with PI, bignum exports the constant e alone to 39 decimal
+places:
+
+
+    perl -Mbignum=e -le 'print e'
+
+**37. Print UNIX time (seconds since Jan 1, 1970, 00:00:00 UTC).**
+
+
+    perl -le 'print time'
+
+The built-in function "time" returns seconds since the epoch.
+
+**38. Print GMT (Greenwich Mean Time) and local computer time.**
+
+
+    perl -le 'print scalar gmtime'
+
+The "gmtime" function is a Perl built-in function. If used in scalar context,
+it prints the time localized to Greenwich time zone.
+
+
+    perl -le 'print scalar localtime'
+
+The "localtime" built-in function acts the same way as "gmtime", except it
+prints the computer's local time.
+
+In array context both "gmtime" and "localtime" return a 9 element list (struct
+tm) with the following elements.
+
+
+
+    ($second,             [0]
+
+    $minute,              [1]
+
+    $hour,                [2]
+
+    $month_day,           [3]
+
+    $month,               [4]
+
+    $year,                [5]
+
+    $week_day,            [6]
+
+    $year_day,            [7]
+
+    $is_daylight_saving   [8]
+
+    )
+
+
+You may slice this list, or print individual elements if you need just some
+part of this information.
+
+For example, to print H:M:S, slice elements 2, 1 and 0 from localtime:
+
+
+    perl -le 'print join ":", (localtime)[2,1,0]'
+
+**39. Print yesterday's date.**
+
+
+    perl -MPOSIX -le '@now = localtime; $now[3] -= 1; print scalar localtime
+mktime @now'
+
+Remember that localtime returns a 9-list (see above) of various date elements.
+The 4th element in the list is current month's day. If we subtract one from it
+we get yesterday. The "mktime" function constructs a Unix epoch time from this
+modified 9-list. And "scalar localtime" construct prints out the new date,
+which is yesterday.
+
+The POSIX package was needed because it exports mktime function. It's supposed
+to normalize negative values.
+
+**40. Print date 14 months, 9 days and 7 seconds ago.**
+
+
+    perl -MPOSIX -le '@now = localtime; $now[0] -= 7; $now[4] -= 14; $now[7]
+-= 9; print scalar localtime mktime @now'
+
+This one-liner modifies 0th, 4th, and 7th elements of @now list. The 0th is
+seconds, the 4th is months and 7th is days (see the table of 9 element time
+list above).
+
+Next, mktime creates Unix time from this new structure, and localtime,
+evaluated in scalar context, prints out the date that was 14 months, 9 days
+and 7 seconds ago.
+
+**41. Calculate factorial.**
+
+
+    perl -MMath::BigInt -le 'print Math::BigInt->new(5)->bfac()'
+
+This one-liner uses [bfac()][35] function from [Math::BigInt][36] module that
+is in the Perl core (no need to install).
+
+Math::BigInt->new(5) construction creates a new Math::BigInt object with value
+5, then a method bfac() is called on the newly created object to calculate the
+factorial of 5. Change 5 to any number you wish to find factorial for the
+value you are interested in.
+
+Another way to calculate factorial is by just multiplying numbers from 1 to n
+together:
+
+
+    perl -le '$f = 1; $f *= $_ for 1..5; print $f'
+
+Here we initially set $f to 1. Then do a loop from 1 to 5 and multiply $f by
+each of the values. The result is 1*2*3*4*5, which is the factorial of 5.
+
+**42. Calculate greatest common divisor.**
+
+
+    perl -MMath::BigInt=bgcd -le 'print bgcd(@list_of_numbers)'
+
+Math::BigInt has several other useful math functions. One of them is
+[bgcd][37] that calculates the greatest common divisor of a list of numbers.
+
+For example, to find gcd of (20, 60, 30), you'd execute the one-liner this
+way:
+
+
+    perl -MMath::BigInt=bgcd -le 'print bgcd(20,60,30)'
+
+Surely, you can also use Euclid's algorithm. Given two numbers $n and $m, this
+one-liner finds the gcd of $n and $m. The result is stored in $m.
+
+
+    perl -le '$n = 20; $m = 35; ($m,$n) = ($n,$m%$n) while $n; print $m'
+
+**43. Calculate least common multiple.**
+
+Another function from Math::BigInt is lcm - the least common multiplicator.
+This one-liner finds lcm of (35, 20, 8):
+
+
+    perl -MMath::BigInt=blcm -le 'print blcm(35,20,8)'
+
+If you know some number theory, then you'll recall that there is a connection
+between gcd and lcm. Given two numbers $n and $m, their lcm is
+$n*$m/gcd($n,$m), therefore one-liner follows:
+
+
+    perl -le '$a = $n = 20; $b = $m = 35; ($m,$n) = ($n,$m%$n) while $n; print
+$a*$b/$m'
+
+**44. Generate 10 random numbers between 5 and 15 (excluding 15).**
+
+
+    perl -le '$n=10; $min=5; $max=15; $, = " "; print map {
+int(rand($max-$min))+$min } 1..$n'
+
+You can modify this one-liner by changing variables $n, $min, $max. The
+variable $n stands for how many random numbers to generate, and [$min,$max) is
+the generation range.
+
+The variable $, gets set to a space because it's the output field separator
+for print and it's undef by default. If we didn't set it to a space, the
+numbers would get printed concatenated together.
+
+**45. Find and print all permutations of a list.**
+
+
+
+    perl -MAlgorithm::Permute -le '$l = [1,2,3,4,5]; $p =
+Algorithm::Permute->new($l); print @r while @r = $p->next'
+
+
+This one-liner uses the object-oriented interface of [Algorithm::Permute][38]
+module to find the permutations (all ways to rearrange items).
+
+The constructor of `Algorithm::Permute` takes an array reference to an array
+of elements to permute. In this particular one-liner the elements are numbers
+1, 2, 3, 4, 5.
+
+The `next` object function returns the next permutation. Calling it repeatedly
+iterates over all permutations. Each permutation is put in `@r` array and is
+then printed.
+
+Please note that the output list gets large really quickly. There are n!
+permutations for a list of n elements.
+
+Another way to print out all permutations is to use the exported `permute`
+subroutine:
+
+
+
+    perl -MAlgorithm::Permute -le '@l = (1,2,3,4,5);
+Algorithm::Permute::permute { print "@l" } @l'
+
+
+**46. Generate the power set.**
+
+
+
+    perl -MList::PowerSet=powerset -le '@l = (1,2,3,4,5); for
+(@{powerset(@l)}) { print "@$_" }'
+
+
+Here I use the [List::PowerSet][39] module from CPAN.
+
+It exports the `powerset` function, which takes a list of elements and returns
+a reference to a list containing references to subset lists.
+
+In the `for()` loop, I call the `powerset` function, pass it the list of
+elements in `@l`. Next I dereference the return value of `powerset`, which is
+a reference to a list of subsets. Next, I dereference each individual subset
+`@$_` and print it.
+
+For a set of n elements, there are exactly 2n subsets in the powerset.
+
+**47. Convert an IP address to unsigned integer.**
+
+
+
+    perl -le '$i=3; $u += ($_<<8*$i--) for "127.0.0.1" =~ /(\d+)/g; print $u'
+
+
+This one-liner converts the IP address `127.0.0.1` into unsigned integer
+(which happens to be `2130706433`).
+
+It does it by first doing a global match of `(\d+)` on the IP address. Doing a
+`for` loop over a global match iterates over all the matches. These matches
+are the four parts of the IP address.
+
+Next the matches are added together in the `$u` variable, with first being bit
+shifted `8*3 = 24` places, the second being shifted `8*2 = 16` places, the
+third `8` places and the last just getting added to `$u`.
+
+But this one-liner doesn't do any error checking on the format of an IP
+address. You may use a more sophisticated regular expression to add checking,
+such as `/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/g`.
+
+I had a discussion about this with a friend and we came up with several more
+one-liner:
+
+
+
+    perl -le '$ip="127.0.0.1"; $ip =~ s/(\d+)\.?/sprintf("%02x", $1)/ge; print
+hex($ip)'
+
+
+This one-liner utilizes the fact that `127.0.0.1` can be easily converted to
+hex as `7f000001` and then converted to decimal from hex by the `hex` Perl
+function.
+
+Another way is to use unpack:
+
+
+
+    perl -le 'print unpack("N", 127.0.0.1)'
+
+
+This one-liner is probably as short as it can get. It uses the vstring
+literals (version strings) to express the IP address. A vstring forms a string
+literal composed of characters with the specified ordinal values. Next, the
+newly formed string literal is unpacked into a number from a string in
+**N**etwork byte order (Big-Endian order) and it gets printed.
+
+If you have a string with an IP (and not a vstring), then you first have to
+convert the string with the function `inet_aton` to byte form:
+
+
+
+    perl -MSocket -le 'print unpack("N", inet_aton("127.0.0.1"))'
+
+
+Here `inet_aton` converts the string " 127.0.0.1 " to the byte form (which is
+the same as pure vstring `127.0.0.1`) and next it unpacks it as the same was
+as in previous one-liner.
+
+If you want a reference of pack and unpack templates (such as "N" for Network
+order), get my [Perl pack/unpack cheat sheet][40]!
+
+**48. Convert an unsigned integer to an IP address.**
+
+
+
+    perl -MSocket -le 'print inet_ntoa(pack("N", 2130706433))'
+
+
+Here the integer `2130706433` first gets packed into a number in Big-Endian
+and then it gets passed to `inet_ntoa` function that converts a number back to
+an IP address.
+
+Another way to do it is by bit shifting and printing one byte at a time:
+
+
+
+    perl -le '$ip = 2130706433; print join ".", map { (($ip>>8*($_))&0xFF) }
+reverse 0..3'
+
+
+And by the way, `join "."` can be replaced by the special variable `$,` that
+acts as a value separator for `print` statement:
+
+
+
+    perl -le '$ip = 2130706433; $, = "."; print map { (($ip>>8*($_))&0xFF) }
+reverse 0..3'
+
+
+See my [Perl special variable cheat sheet][31] for the list of all variables.

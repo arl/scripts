@@ -1,0 +1,275 @@
+## 1. Line Spacing
+
+**1. Double-space a file.**
+
+
+    awk '1; { print "" }'
+
+So how does it work? A one-liner is an Awk program and every Awk program
+consists of a sequence of pattern-action statements "**pattern { action
+statements }**". In this case there are two statements "1" and "{ print "" }".
+In a pattern-action statement either the pattern or the action may be missing.
+If the pattern is missing, the action is applied to every single line of
+input. A missing action is equivalent to '{ print }'. Thus, this one-liner
+translates to:
+
+
+    awk '1 { print } { print "" }'
+
+An action is applied only if the pattern matches, i.e., pattern is true. Since
+'1' is always true, this one-liner translates further into two print
+statements:
+
+
+    awk '{ print } { print "" }'
+
+Every print statement in Awk is silently followed by an **ORS - Output Record
+Separator** variable, which is a newline by default. The first print statement
+with no arguments is equivalent to "print $0", where $0 is a variable holding
+the entire line. The second print statement prints nothing, but knowing that
+each print statement is followed by ORS, it actually prints a newline. So
+there we have it, each line gets double-spaced.
+
+**2. Another way to double-space a file.**
+
+
+    awk 'BEGIN { ORS="\n\n" }; 1'
+
+**BEGIN** is a special kind of pattern which is not tested against the input.
+It is executed **before** any input is read. This one-liner double-spaces the
+file by setting the ORS variable to two newlines. As I mentioned previously,
+statement "1" gets translated to "{ print }", and every print statement gets
+terminated with the value of ORS variable.
+
+**3. Double-space a file so that no more than one blank line appears between
+lines of text.**
+
+
+    awk 'NF { print $0 "\n" }'
+
+The one-liner uses another special variable called **NF - Number of Fields**.
+It contains the number of fields the current line was split into. For example,
+a line "this is a test" splits in four pieces and NF gets set to 4. The empty
+line "" does not split into any pieces and NF gets set to 0. Using NF as a
+pattern can effectively filter out empty lines. This one liner says: "If there
+are any number of fields, print the whole line followed by newline."
+
+**4. Triple-space a file.**
+
+
+    awk '1; { print "\n" }'
+
+This one-liner is very similar to previous ones. '1' gets translated into '{
+print }' and the resulting Awk program is:
+
+
+    awk '{ print; print "\n" }'
+
+It prints the line, then prints a newline followed by terminating ORS, which
+is newline by default.
+
+## 2. Numbering and Calculations
+
+**5. Number lines in each file separately.**
+
+
+    awk '{ print FNR "\t" $0 }'
+
+This Awk program appends the **FNR - File Line Number** predefined variable
+and a tab (\t) before each line. FNR variable contains the current line for
+each file separately. For example, if this one-liner was called on two files,
+one containing 10 lines, and the other 12, it would number lines in the first
+file from 1 to 10, and then resume numbering from one for the second file and
+number lines in this file from 1 to 12. FNR gets reset from file to file.
+
+**6. Number lines for all files together.**
+
+
+    awk '{ print NR "\t" $0 }'
+
+This one works the same as #5 except that it uses **NR - Line Number**
+variable, which does not get reset from file to file. It counts the input
+lines seen so far. For example, if it was called on the same two files with 10
+and 12 lines, it would number the lines from 1 to 22 (10 + 12).
+
+**7. Number lines in a fancy manner.**
+
+
+    awk '{ printf("%5d : %s\n", NR, $0) }'
+
+This one-liner uses **printf**() function to number lines in a custom format.
+It takes format parameter just like a regular printf() function. Note that ORS
+does not get appended at the end of printf(), so we have to print the newline
+(\n) character explicitly. This one right-aligns line numbers, followed by a
+space and a colon, and the line.
+
+**8. Number only non-blank lines in files.**
+
+
+    awk 'NF { $0=++a " :" $0 }; { print }'
+
+Awk **variables are dynamic**; they come into existence when they are first
+used. This one-liner pre-increments variable 'a' each time the line is non-
+empty, then it appends the value of this variable to the beginning of line and
+prints it out.
+
+**9. Count lines in files (emulates wc -l).**
+
+
+    awk 'END { print NR }'
+
+**END** is another special kind of pattern which is not tested against the
+input. It is executed when all the input has been exhausted. This one-liner
+outputs the value of NR special variable after all the input has been
+consumed. NR contains total number of lines seen (= number of lines in the
+file).
+
+**10. Print the sum of fields in every line.**
+
+
+    awk '{ s = 0; for (i = 1; i <= NF; i++) s = s+$i; print s }'
+
+Awk has some features of C language, like the **for (;;) { ... }** loop. This
+one-liner loops over all fields in a line (there are NF fields in a line), and
+adds the result in variable 's'. Then it prints the result out and proceeds to
+the next line.
+
+**11. Print the sum of fields in all lines.**
+
+
+    awk '{ for (i = 1; i <= NF; i++) s = s+$i }; END { print s+0 }'
+
+This one-liner is basically the same as #10, except that it prints the sum of
+all fields. Notice how it did not initialize variable 's' to 0. It was not
+necessary as variables come into existence dynamically. Also notice how it
+calls "print s+0" and not just "print s". It is necessary if there are no
+fields. If there are no fields, "s" never comes into existence and is
+undefined. Printing an undefined value does not print anything (i.e. prints
+just the ORS). Adding a 0 does a mathematical operation and undef+0 = 0, so it
+prints "0".
+
+**12. Replace every field by its absolute value.**
+
+
+    awk '{ for (i = 1; i <= NF; i++) if ($i < 0) $i = -$i; print }'
+
+This one-liner uses two other features of C language, namely the **if (...) {
+... }** statement and omission of curly braces. It loops over all fields in a
+line and checks if any of the fields is less than 0. If any of the fields is
+less than 0, then it just negates the field to make it positive. Fields can be
+addresses indirectly by a variable. For example, i = 5; $i = 'hello', sets
+field number 5 to string 'hello'.
+
+Here is the same one-liner rewritten with curly braces for clarity. The
+'print' statement gets executed after all the fields in the line have been
+replaced by their absolute values.
+
+
+
+    awk '{
+
+      for (i = 1; i <= NF; i++) {
+
+        if ($i < 0) {
+
+          $i = -$i;
+
+        }
+
+      }
+
+      print
+
+    }'
+
+
+**13. Count the total number of fields (words) in a file.**
+
+
+    awk '{ total = total + NF }; END { print total+0 }'
+
+This one-liner matches all the lines and keeps adding the number of fields in
+each line. The number of fields seen so far is kept in a variable named
+'total'. Once the input has been processed, special pattern 'END { ... }' is
+executed, which prints the total number of fields. See 11th one-liner for
+explanation of why we "print total+0" in the END block.
+
+**14. Print the total number of lines containing word "Beth".**
+
+
+    awk '/Beth/ { n++ }; END { print n+0 }'
+
+This one-liner has two pattern-action statements. The first one is '/Beth/ {
+n++ }'. A pattern between two slashes is a regular expression. It matches all
+lines containing pattern "Beth" (not necessarily the word "Beth", it could as
+well be "Bethe" or "theBeth333"). When a line matches, variable 'n' gets
+incremented by one. The second pattern-action statement is 'END { print n+0
+}'. It is executed when the file has been processed. Note the '+0' in 'print
+n+0' statement. It forces '0' to be printed in case there were no matches ('n'
+was undefined). Had we not put '+0' there, an empty line would have been
+printed.
+
+**15. Find the line containing the largest (numeric) first field.**
+
+
+    awk '$1 > max { max=$1; maxline=$0 }; END { print max, maxline }'
+
+This one-liner keeps track of the largest number in the first field (in
+variable 'max') and the corresponding line (in variable 'maxline'). Once it
+has looped over all lines, it prints them out. Warning: this one-liner does
+not work if all the values are negative.
+
+Here is the fix:
+
+
+    awk 'NR == 1 { max = $1; maxline = $0; next; } $1 > max { max=$1;
+maxline=$0 }; END { print max, maxline }'
+
+**16. Print the number of fields in each line, followed by the line.**
+
+
+    awk '{ print NF ":" $0 } '
+
+This one-liner just prints out the predefined variable NF - Number of Fields,
+which contains the number of fields in the line, followed by a colon and the
+line itself.
+
+**17. Print the last field of each line.**
+
+
+    awk '{ print $NF }'
+
+Fields in Awk need not be referenced by constants. For example, code like 'f =
+3; print $f' would print out the 3rd field. This one-liner prints the field
+with the value of NF. $NF is last field in the line.
+
+**18. Print the last field of the last line.**
+
+
+    awk '{ field = $NF }; END { print field }'
+
+This one-liner keeps track of the last field in variable 'field'. Once it has
+looped all the lines, variable 'field' contains the last field of the last
+line, and it just prints it out.
+
+Here is a better version of the same one-liner. It's more common, idiomatic
+and efficient:
+
+
+    awk 'END { print $NF }'
+
+**19. Print every line with more than 4 fields.**
+
+
+    awk 'NF > 4'
+
+This one-liner omits the action statement. As I noted in one-liner #1, a
+missing action statement is equivalent to '{ print }'.
+
+**20. Print every line where the value of the last field is greater than 4.**
+
+
+    awk '$NF > 4'
+
+This one-liner is similar to #17. It references the last field by NF variable.
+If it's greater than 4, it prints it out.

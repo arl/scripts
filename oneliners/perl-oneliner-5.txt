@@ -1,0 +1,295 @@
+## Text conversion and substitution
+
+**62. ROT13 a string.**
+
+
+    'y/A-Za-z/N-ZA-Mn-za-m/'
+
+This one-liner uses the `y` operator (also known as `tr` operator) to do
+ROT13. Operators `y` and `tr` do string transliteration. Given
+`y/SEARCH/REPLACE/`, the operator transliterates all occurrences of the
+characters found in `SEARCH` list with the corresponding (position-wise)
+characters in `REPLACE` list.
+
+In this one-liner `A-Za-z` creates the following list of characters:
+
+
+    ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+
+And `N-ZA-Mn-za-m` creates this list:
+
+
+    NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm
+
+If you look closely you'll notice that the second list is actually the first
+list offset by 13 characters. Now the `y` operator translates each character
+in the first list to a character in the second list, thus performing the ROT13
+operation.
+
+If you wish to ROT13 the whole file then do this:
+
+
+    perl -lpe 'y/A-Za-z/N-ZA-Mn-za-m/' file
+
+The `-p` argument puts each of `file`'s line in the `$_` variable, the `y`
+does ROT13, and `-p` prints the `$_` out. The `-l` appends a newline to the
+output.
+
+Note: remember that applying ROT13 twice produces the same string, i.e.,
+`ROT13(ROT13(string)) == string`.
+
+**63. Base64 encode a string.**
+
+
+    perl -MMIME::Base64 -e 'print encode_base64("string")'
+
+This one-liner uses the [MIME::Base64][32] module that is in the core (no need
+to install it, it comes with Perl). This module exports the `encode_base64`
+function that takes a string and returns base64 encoded version of it.
+
+To base64 encode the whole file do the following:
+
+
+    perl -MMIME::Base64 -0777 -ne 'print encode_base64($_)' file
+
+Here the `-0777` argument together with `-n` causes Perl to slurp the whole
+file into the `$_` variable. Then the file gets base64 encoded and printed
+out, just like the string example above.
+
+If we didn't slurp the file and encoded it line-by-line we'd get a mess.
+
+**64. Base64 decode a string.**
+
+
+    perl -MMIME::Base64 -le 'print decode_base64("base64string")'
+
+The `MIME::Base64` module also exports `decode_base64` function that takes a
+base64-encoded string and decodes it.
+
+The whole file can be similarly decoded by:
+
+
+    perl -MMIME::Base64 -ne 'print decode_base64($_)' file
+
+There is no need to slurp the whole file into `$_` because each line of a
+base64 encoded file is exactly 76 characters and decodes nicely.
+
+**65. URL-escape a string.**
+
+
+    perl -MURI::Escape -le 'print uri_escape($string)'
+
+You'll need to install the [URI::Escape][33] module as it doesn't come with
+Perl. The module exports two functions - `uri_escape` and `uri_unescape`. The
+first one does URL-escaping (sometimes also referred to as URL encoding), and
+the other does URL-unescaping (URL decoding).
+
+**66. URL-unescape a string.**
+
+
+    perl -MURI::Escape -le 'print uri_unescape($string)'
+
+This one-liner uses the `uri_unescape` function from `URI::Escape` module to
+do URL-unescaping.
+
+**67. HTML-encode a string.**
+
+
+    perl -MHTML::Entities -le 'print encode_entities($string)'
+
+This one-liner uses the `encode_entities` function from [HTML::Entities][34]
+module. This function encodes HTML entities. For example, `<` and `>` get
+turned into `&lt;` and `&gt;`.
+
+**68. HTML-decode a string.**
+
+
+    perl -MHTML::Entities -le 'print decode_entities($string)'
+
+This one-liner uses the `decode_entities` function from `HTML::Entities`
+module.
+
+**69. Convert all text to uppercase.**
+
+
+    perl -nle 'print uc'
+
+This one-liner uses the `uc` function, which by default operates on the `$_`
+variable and returns an uppercase version of it.
+
+Another way to do the same is to use `-p` command line option that enables
+automatic printing of `$_` variable and modify it in-place:
+
+
+    perl -ple '$_=uc'
+
+The same can also be also achieved by applying the `\U` escape sequence to
+string interpolation:
+
+
+    perl -nle 'print "\U$_"'
+
+It causes anything after it (or until the first occurrence of `\E`) to be
+upper-cased.
+
+**70. Convert all text to lowercase.**
+
+
+    perl -nle 'print lc'
+
+This one-liner is very similar to the previous. Here the `lc` function is used
+that converts the contents of `$_` to lowercase.
+
+Or, using escape sequence `\L` and string interpolation:
+
+
+    perl -nle 'print "\L$_"'
+
+Here `\L` causes everything after it (until the first occurrence of `\E`) to
+be lower-cased.
+
+**71. Uppercase only the first word of each line.**
+
+
+    perl -nle 'print ucfirst lc'
+
+The one-liner first applies the `lc` function to the input that makes it lower
+case and then uses the `ucfirst` function that upper-cases only the first
+character.
+
+It can also be done via escape codes and string interpolation:
+
+
+    perl -nle 'print "\u\L$_"'
+
+First the `\L` lower-cases the whole line, then `\u` upper-cases the first
+character.
+
+**72. Invert the letter case.**
+
+
+    perl -ple 'y/A-Za-z/a-zA-Z/'
+
+This one-liner does transliterates capital letters `A-Z` to lowercase letters
+`a-z`, and lowercase letters to uppercase letters, thus switching the case.
+
+**73. Camel case each line.**
+
+
+    perl -ple 's/(\w+)/\u$1/g'
+
+This is a lousy Camel Casing one-liner. It takes each word and upper-cases the
+first letter of it. It fails on possessive forms like "friend's car". It turns
+them into "Friend'S Car".
+
+An improvement is:
+
+
+    s/(?<!['])(\w+)/\u\1/g
+
+Which checks if the character before the word is not single quote `'`. But I
+am sure it still fails on some more exotic examples.
+
+**74. Strip leading whitespace (spaces, tabs) from the beginning of each
+line.**
+
+
+    perl -ple 's/^[ \t]+//'
+
+This one-liner deletes all whitespace from the beginning of each line. It uses
+the substitution operator `s`. Given `s/REGEX/REPLACE/` it replaces the
+matched `REGEX` by the `REPLACE` string. In this case the `REGEX` is `^[
+\t]+`, which means "match one or more space or tab at the beginning of the
+string" and `REPLACE` is nothing, meaning, replace the matched part with empty
+string.
+
+The regex class `[ \t]` can actually be replaced by `\s+` that matches any
+whitespace (including tabs and spaces):
+
+
+    perl -ple 's/^\s+//'
+
+**75. Strip trailing whitespace (space, tabs) from the end of each line.**
+
+
+    perl -ple 's/[ \t]+$//'
+
+This one-liner deletes all whitespace from the end of each line.
+
+Here the `REGEX` of the `s` operator says "match one or more space or tab at
+the end of the string." The `REPLACE` part is empty again, which means to
+erase the matched whitespace.
+
+**76. Strip whitespace from the beginning and end of each line.**
+
+
+    perl -ple 's/^[ \t]+|[ \t]+$//g'
+
+This one-liner combines the previous two. Notice that it specifies the global
+`/g` flag to the `s` operator. It's necessary because we want it to delete
+whitespace at the beginning AND end of the string. If we didn't specify it, it
+would only delete whitespace at the beginning (assuming it exists) and not at
+the end.
+
+**77. Convert UNIX newlines to DOS/Windows newlines.**
+
+
+    perl -pe 's|\n|\r\n|'
+
+This one-liner substitutes the Unix newline `\n` LF with Windows newline
+`\r\n` CRLF on each line. Remember that the `s` operator can use anything for
+delimiters. In this one-liner it uses vertical pipes to delimit `REGEX` from
+`REPLACE` to improve readibility.
+
+**78. Convert DOS/Windows newlines to UNIX newlines.**
+
+
+    perl -pe 's|\r\n|\n|'
+
+This one-liner does the opposite of the previous one. It takes Windows
+newlines CRLF and converts them to Unix newlines LF.
+
+**79. Convert UNIX newlines to Mac newlines.**
+
+
+    perl -pe 's|\n|\r|'
+
+Apple Macintoshes used to use `\r` CR as newlines. This one-liner converts
+UNIX's `\n` to Mac's `\r`.
+
+**80. Substitute (find and replace) "foo" with "bar" on each line.**
+
+
+    perl -pe 's/foo/bar/'
+
+This one-liner uses the `s/REGEX/REPLACE/` command to substitute "foo" with
+"bar" on each line.
+
+To replace all "foos" with "bars", add the global `/g` flag:
+
+
+    perl -pe 's/foo/bar/g'
+
+**81. Substitute (find and replace) "foo" with "bar" on lines that match
+"baz". **
+
+
+    perl -pe '/baz/ && s/foo/bar/'
+
+This one-liner is equivalent to:
+
+
+
+    while (defined($line = <>)) {
+
+      if ($line =~ /baz/) {
+
+        $line =~ s/foo/bar/
+
+      }
+
+    }
+
+
+It puts each line in variable `$line`, then checks if line matches "baz", and
+if it does, it replaces "foo" with "bar" in it.

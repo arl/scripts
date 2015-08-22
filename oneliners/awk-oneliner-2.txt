@@ -1,0 +1,447 @@
+## 3. Text Conversion and Substitution
+
+**21. Convert Windows/DOS newlines (CRLF) to Unix newlines (LF) from Unix.**
+
+
+    awk '{ sub(/\r$/,""); print }'
+
+This one-liner uses the sub(regex, repl, [string]) function. This function
+substitutes the first instance of regular expression "regex" in string
+"string" with the string "repl". If "string" is omitted, variable $0 is used.
+Variable $0, as I explained in [the first part of the article][25], contains
+the entire line.
+
+The one-liner replaces '\r' (CR) character at the end of the line with
+nothing, i.e., erases CR at the end. Print statement prints out the line and
+appends ORS variable, which is '\n' by default. Thus, a line ending with CRLF
+has been converted to a line ending with LF.
+
+**22. Convert Unix newlines (LF) to Windows/DOS newlines (CRLF) from Unix.**
+
+
+    awk '{ sub(/$/,"\r"); print }'
+
+This one-liner also uses the sub() function. This time it replaces the zero-
+width anchor '$' at the end of the line with a '\r' (CR char). This
+substitution actually adds a CR character to the end of the line. After doing
+that Awk prints out the line and appends the ORS, making the line terminate
+with CRLF.
+
+**23. Convert Unix newlines (LF) to Windows/DOS newlines (CRLF) from
+Windows/DOS.**
+
+
+    awk 1
+
+This one-liner may work, or it may not. It depends on the implementation. If
+the implementation catches the Unix newlines in the file, then it will read
+the file line by line correctly and output the lines terminated with CRLF. If
+it does not understand Unix LF's in the file, then it will print the whole
+file and terminate it with CRLF (single windows newline at the end of the
+whole file).
+
+Ps. Statement '1' (or anything that evaluates to true) in Awk is syntactic
+sugar for '{ print }'.
+
+**24. Convert Windows/DOS newlines (CRLF) to Unix newlines (LF) from
+Windows/DOS**
+
+
+    gawk -v BINMODE="w" '1'
+
+Theoretically this one-liner should convert CRLFs to LFs on DOS. There is a
+[note][32] in GNU Awk documentation that says: "Under DOS, gawk (and many
+other text programs) silently translates end-of-line "\r\n" to "\n" on input
+and "\n" to "\r\n" on output. A special "BINMODE" variable allows control over
+these translations and is interpreted as follows: ... If "BINMODE" is "w",
+then binary mode is set on write (i.e., no translations on writes)."
+
+My tests revealed that no translation was done, so you can't rely on this
+BINMODE hack.
+
+Eric suggests to better use the "tr" utility to convert CRLFs to LFs on
+Windows:
+
+
+
+    tr -d \r
+
+
+The 'tr' program is used for translating one set of characters to another.
+Specifying -d option makes it delete all characters and not do any
+translation. In this case it's the '\r' (CR) character that gets erased from
+the input. Thus, CRLFs become just LFs.
+
+**25. Delete leading whitespace (spaces and tabs) from the beginning of each
+line (ltrim).**
+
+
+    awk '{ sub(/^[ \t]+/, ""); print }'
+
+This one-liner also uses sub() function. What it does is replace regular
+expression "^[ \t]+" with nothing "". The regular expression "^[ \t]+" means -
+match one or more space " " or a tab "\t" at the beginning "^" of the string.
+
+**26. Delete trailing whitespace (spaces and tabs) from the end of each line
+(rtrim).**
+
+
+    awk '{ sub(/[ \t]+$/, ""); print }'
+
+This one-liner is very similar to the previous one. It replaces regular
+expression "[ \t]+$" with nothing. The regular expression "[ \t]+$" means -
+match one or more space " " or a tab "\t" at the end "$" of the string. The
+"+" means "one or more".
+
+**27. Delete both leading and trailing whitespaces from each line (trim).**
+
+
+    awk '{ gsub(/^[ \t]+|[ \t]+$/, ""); print }'
+
+This one-liner uses a new function called "gsub". Gsub() does the same as
+sub(), except it performs as many substitutions as possible (that is, it's a
+global sub()). For example, given a variable f = "foo", sub("o", "x", f) would
+replace just one "o" in variable f with "x", making f be "fxo"; but gsub("o",
+"x", f) would replace both "o"s in "foo" resulting "fxx".
+
+The one-liner combines both previous one-liners - it replaces leading
+whitespace "^[ \t]+" and trailing whitespace "[ \t]+$" with nothing, thus
+trimming the string.
+
+To remove whitespace between fields you may use this one-liner:
+
+
+    awk '{ $1=$1; print }'
+
+This is a pretty tricky one-liner. It seems to do nothing, right? Assign $1 to
+$1. But no, when you change a field, Awk rebuilds the $0 variable. It takes
+all the fields and concats them, separated by OFS (single space by default).
+All the whitespace between fields is gone.
+
+**28. Insert 5 blank spaces at beginning of each line.**
+
+
+    awk '{ sub(/^/, "     "); print }'
+
+This one-liner substitutes the zero-length beginning of line anchor "^" with
+five empty spaces. As the anchor is zero-length and matches the beginning of
+line, the five whitespace characters get appended to beginning of the line.
+
+**29. Align all text flush right on a 79-column width.**
+
+
+    awk '{ printf "%79s\n", $0 }'
+
+This one-liner asks printf() to print the string in $0 variable and left pad
+it with spaces until the total length is 79 chars.
+
+Please see the documentation of [printf function][33] for more information and
+examples.
+
+**30. Center all text on a 79-character width.**
+
+
+    awk '{ l=length(); s=int((79-l)/2); printf "%"(s+l)"s\n", $0 }'
+
+First this one-liner calculates the length() of the line and puts the result
+in variable "l". Length(var) function returns the string length of var. If the
+variable is not specified, it returns the length of the entire line (variable
+$0). Next it calculates how many white space characters to pad the line with
+and stores the result in variable "s". Finally it printf()s the line with
+appropriate number of whitespace chars.
+
+For example, when printing a string "foo", it first calculates the length of
+"foo" which is 3. Next it calculates the column "foo" should appear which
+(79-3)/2 = 38. Finally it printf("%41", "foo"). Printf() function outputs 38
+spaces and then "foo", making that string centered (38*2 + 3 = 79)
+
+**31. Substitute (find and replace) "foo" with "bar" on each line.**
+
+
+    awk '{ sub(/foo/,"bar"); print }'
+
+This one-liner is very similar to the others we have seen before. It uses the
+sub() function to replace "foo" with "bar". Please note that it replaces just
+the first match. To replace all "foo"s with "bar"s use the gsub() function:
+
+
+    awk '{ gsub(/foo/,"bar"); print }'
+
+Another way is to use the gensub() function:
+
+
+    gawk '{ $0 = gensub(/foo/,"bar",4); print }'
+
+This one-liner replaces only the 4th match of "foo" with "bar". It uses a
+never before seen gensub() function. The prototype of this function is
+gensub(regex, s, h[, t]). It searches the string "t" for "regex" and replaces
+"h"-th match with "s". If "t" is not given, $0 is assumed. Unlike sub() and
+gsub() it returns the modified string "t" (sub and gsub modified the string
+in-place).
+
+Gensub() is a non-standard function and requires GNU Awk or Awk included in
+NetBSD.
+
+In this one-liner regex = "/foo/", s = "bar", h = 4, and t = $0. It replaces
+the 4th instance of "foo" with "bar" and assigns the new string back to the
+whole line $0.
+
+**32. Substitute "foo" with "bar" only on lines that contain "baz".**
+
+
+    awk '/baz/ { gsub(/foo/, "bar") }; { print }'
+
+As I explained in the first one-liner in the first part of the article, every
+Awk program consists of a sequence of pattern-action statements "pattern {
+action statements }". Action statements are applied only to lines that match
+pattern.
+
+In this one-liner the pattern is a regular expression /baz/. If line contains
+"baz", the action statement gsub(/foo/, "bar") is executed. And as we have
+learned, it substitutes all instances of "foo" with "bar". If you want to
+substitute just one, use the sub() function!
+
+**33. Substitute "foo" with "bar" only on lines that do not contain "baz".**
+
+
+    awk '!/baz/ { gsub(/foo/, "bar") }; { print }'
+
+This one-liner negates the pattern /baz/. It works exactly the same way as the
+previous one, except it operates on lines that do not contain match this
+pattern.
+
+**34. Change "scarlet" or "ruby" or "puce" to "red".**
+
+
+    awk '{ gsub(/scarlet|ruby|puce/, "red"); print}'
+
+This one-liner makes use of extended regular expression alternation operator |
+(pipe). The regular expression /scarlet|ruby|puce/ says: match "scarlet" or
+"ruby" or "puce". If the line matches, gsub() replaces all the matches with
+"red".
+
+**35. Reverse order of lines (emulate "tac").**
+
+
+    awk '{ a[i++] = $0 } END { for (j=i-1; j>=0;) print a[j--] }'
+
+This is the trickiest one-liner today. It starts by recording all the lines in
+the array "a". For example, if the input to this program was three lines
+"foo", "bar", and "baz", then the array "a" would contain the following
+values: a[0] = "foo", a[1] = "bar", and a[2] = "baz".
+
+When the program has finished processing all lines, Awk executes the END { }
+block. The END block loops over the elements in the array "a" and prints the
+recorded lines. In our example with "foo", "bar", "baz" the END block does the
+following:
+
+
+
+    for (j = 2; j >= 0; ) print a[j--]
+
+
+First it prints out j[2], then j[1] and then j[0]. The output is three
+separate lines "baz", "bar" and "foo". As you can see the input was reversed.
+
+**36. Join a line ending with a backslash with the next line.**
+
+
+    awk '/\\$/ { sub(/\\$/,""); getline t; print $0 t; next }; 1'
+
+This one-liner uses regular expression "/\\$/" to look for lines ending with a
+backslash. If the line ends with a backslash, the backslash gets removed by
+sub(/\\$/,"") function. Then the "getline t" function is executed. "Getline t"
+reads the next line from input and stores it in variable t. "Print $0 t"
+statement prints the original line (but with trailing backslash removed) and
+the newly read line (which was stored in variable t). Awk then continues with
+the next line. If the line does not end with a backslash, Awk just prints it
+out with "1".
+
+Unfortunately this one liner fails to join more than 2 lines (this is left as
+an exercise to the reader to come up with a one-liner that joins arbitrary
+number of lines that end with backslash :)).
+
+**37. Print and sort the login names of all users.**
+
+
+    awk -F ":" '{ print $1 | "sort" }' /etc/passwd
+
+This is the first time we see the -F argument passed to Awk. This argument
+specifies a character, a string or a regular expression that will be used to
+split the line into fields ($1, $2, ...). For example, if the line is "foo-
+bar-baz" and -F is "-", then the line will be split into three fields: $1 =
+"foo", $2 = "bar" and $3 = "baz". If -F is not set to anything, the line will
+contain just one field $1 = "foo-bar-baz".
+
+Specifying -F is the same as setting the FS (Field Separator) variable in the
+BEGIN block of Awk program:
+
+
+
+    awk -F ":"
+
+    # is the same as
+
+    awk 'BEGIN { FS=":" }'
+
+
+/etc/passwd is a text file, that contains a list of the system's accounts,
+along with some useful information like login name, user ID, group ID, home
+directory, shell, etc. The entries in the file are separated by a colon ":".
+
+Here is an example of a line from /etc/passwd file:
+
+
+
+    pkrumins:x:1000:100:Peteris Krumins:/home/pkrumins:/bin/bash
+
+
+If we split this line on ":", the first field is the username (pkrumins in
+this example). The one-liner does just that - it splits the line on ":", then
+forks the "sort" program and feeds it all the usernames, one by one. After Awk
+has finished processing the input, sort program sorts the usernames and
+outputs them.
+
+**38. Print the first two fields in reverse order on each line.**
+
+
+    awk '{ print $2, $1 }' file
+
+This one liner is obvious. It reverses the order of fields $1 and $2. For
+example, if the input line is "foo bar", then after running this program the
+output will be "bar foo".
+
+**39. Swap first field with second on every line.**
+
+
+    awk '{ temp = $1; $1 = $2; $2 = temp; print }'
+
+This one-liner uses a temporary variable called "temp". It assigns the first
+field $1 to "temp", then it assigns the second field to the first field and
+finally it assigns "temp" to $2. This procedure swaps the first two fields on
+every line. For example, if the input is "foo bar baz", then the output will
+be "bar foo baz".
+
+Ps. This one-liner was incorrect in Eric's awk1line.txt file. "Print" was
+missing.
+
+**40. Delete the second field on each line.**
+
+
+    awk '{ $2 = ""; print }'
+
+This one liner just assigns empty string to the second field. It's gone.
+
+**41. Print the fields in reverse order on every line.**
+
+
+    awk '{ for (i=NF; i>0; i--) printf("%s ", $i); printf ("\n") }'
+
+We saw the "NF" variable that stands for Number of Fields in the [part
+one][25] of this article. After processing each line, Awk sets the NF variable
+to number of fields found on that line.
+
+This one-liner loops in reverse order starting from NF to 1 and outputs the
+fields one by one. It starts with field $NF, then $(NF-1), ..., $1. After that
+it prints a newline character.
+
+**42. Remove duplicate, consecutive lines (emulate "uniq")**
+
+
+    awk 'a !~ $0; { a = $0 }'
+
+Variables in Awk don't need to be initialized or declared before they are
+being used. They come into existence the first time they are used. This one-
+liner uses variable "a" to keep the last line seen "{ a = $0 }". Upon reading
+the next line, it compares if the previous line (in variable "a") is not the
+same as the current one "a !~ $0". If it is not the same, the expression
+evaluates to 1 (true), and as I explained earlier, any true expression is the
+same as "{ print }", so the line gets printed out. Then the program saves the
+current line in variable "a" again and the same process continues over and
+over again.
+
+This one-liner is actually incorrect. It uses a regular expression matching
+operator "!~". If the previous line was something like "fooz" and the new one
+is "foo", then it won't get output, even though they are not duplicate lines.
+
+Here is the correct, fixed, one-liner:
+
+
+    awk 'a != $0; { a = $0 }'
+
+It compares lines line-wise and not as a regular expression.
+
+**43. Remove duplicate, nonconsecutive lines.**
+
+
+    awk '!a[$0]++'
+
+This one-liner is very idiomatic. It registers the lines seen in the
+associative-array "a" (arrays are always associative in Awk) and at the same
+time tests if it had seen the line before. If it had seen the line before,
+then a[line] > 0 and !a[line] == 0. Any expression that evaluates to false is
+a no-op, and any expression that evals to true is equal to "{ print }".
+
+For example, suppose the input is:
+
+
+
+    foo
+
+    bar
+
+    foo
+
+    baz
+
+
+When Awk sees the first "foo", it evaluates the expression "!a["foo"]++".
+"a["foo"]" is false, but "!a["foo"]" is true - Awk prints out "foo". Then it
+increments "a["foo"]" by one with "++" post-increment operator. Array "a" now
+contains one value "a["foo"] == 1".
+
+Next Awk sees "bar", it does exactly the same what it did to "foo" and prints
+out "bar". Array "a" now contains two values "a["foo"] == 1" and "a["bar"] ==
+1".
+
+Now Awk sees the second "foo". This time "a["foo"]" is true, "!a["foo"]" is
+false and Awk does not print anything! Array "a" still contains two values
+"a["foo"] == 2" and "a["bar"] == 1".
+
+Finally Awk sees "baz" and prints it out because "!a["baz"]" is true. Array
+"a" now contains three values "a["foo"] == 2" and "a["bar"] == 1" and
+"a["baz"] == 1".
+
+The output:
+
+
+
+    foo
+
+    bar
+
+    baz
+
+
+Here is another one-liner to do the same. Eric in his one-liners says it's the
+most efficient way to do it.
+
+
+    awk '!($0 in a) { a[$0]; print }'
+
+It's basically the same as previous one, except that it uses the 'in'
+operator. Given an array "a", an expression "foo in a" tests if variable "foo"
+is in "a".
+
+Note that an empty statement "a[$0]" creates an element in the array.
+
+**44. Concatenate every 5 lines of input with a comma.**
+
+
+    awk 'ORS=NR%5?",":"\n"'
+
+We saw the ORS variable in [part one][25] of the article. This variable gets
+appended after every line that gets output. In this one-liner it gets changed
+on every 5th line from a comma to a newline. For lines 1, 2, 3, 4 it's a
+comma, for line 5 it's a newline, for lines 6, 7, 8, 9 it's a comma, for line
+10 a newline, etc.

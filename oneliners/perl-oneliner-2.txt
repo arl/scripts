@@ -1,0 +1,219 @@
+## Line Numbering
+
+**9. Number all lines in a file.**
+
+
+    perl -pe '$_ = "$. $_"'
+
+As I explained in [the first one-liner][25], "-p" causes Perl to assume a loop
+around the program (specified by "-e") that reads each line of input into the
+" $_ " variable, executes the program and then prints the " $_ " variable.
+
+In this one-liner I simply modify " $_ " and prepend the " $. " variable to
+it. The special variable " $. " contains the current line number of input.
+
+The result is that each line gets its line number prepended.
+
+**10. Number only non-empty lines in a file.**
+
+
+    perl -pe '$_ = ++$a." $_" if /./'
+
+Here we employ the "action if condition" statement that executes "action" only
+if "condition" is true. In this case the condition is a regular expression
+"/./", which matches any character except newline (that is, it matches a non-
+empty line); and the action is " $_ = ++$a." $_" ", which prepends variable "
+$a " incremented by one to the current line. As we didn't use strict pragma,
+$a was created automatically.
+
+The result is that at each non-empty line " $a " gets incremented by one and
+prepended to that line. And at each empty line nothing gets modified and the
+empty line gets printed as is.
+
+**11. Number and print only non-empty lines in a file (drop empty lines).**
+
+
+    perl -ne 'print ++$a." $_" if /./'
+
+This one-liner uses the "-n" program argument that places the line in " $_ "
+variable and then executes the program specified by "-e". Unlike "-p", it does
+not print the line after executing code in "-e", so we have to call "print"
+explicitly to get it printed.
+
+The one-liner calls "print" only on lines that have at least one character in
+them. And exactly like in the previous one-liner, it increments the line
+number in variable " $a " by one for each non-empty line.
+
+The empty lines simply get ignored and never get printed.
+
+**12. Number all lines but print line numbers only non-empty lines.**
+
+
+    perl -pe '$_ = "$. $_" if /./'
+
+This one-liner is similar to one-liner #10. Here I modify the " $_ " variable
+that holds the entire line only if the line has at least one character. All
+other lines (empty ones) get printed without line numbers.
+
+**13. Number only lines that match a pattern, print others unmodified.**
+
+
+    perl -pe '$_ = ++$a." $_" if /regex/'
+
+Here we again use the "action if condition" statement but the condition in
+this case is a pattern (regular expression) "/regex/". The action is the same
+as in one-liner #10. I don't want to repeat, see #10 for explanation.
+
+**14. Number and print only lines that match a pattern.**
+
+
+    perl -ne 'print ++$a." $_" if /regex/'
+
+This one-liner is almost exactly like #11. The only difference is that it
+prints numbered lines that match only "/regex/".
+
+**15. Number all lines, but print line numbers only for lines that match a
+pattern.**
+
+
+    perl -pe '$_ = "$. $_" if /regex/'
+
+This one-liner is similar to the previous one-liner and to one-liner #12. Here
+the line gets its line number prepended if it matches a /regex/, otherwise it
+just gets printed without a line number.
+
+**16. Number all lines in a file using a custom format (emulate cat -n).**
+
+
+    perl -ne 'printf "%-5d %s", $., $_'
+
+This one-liner uses the formatted print "printf" function to print the line
+number together with line. In this particular example the line numbers are
+left aligned on 5 char boundary.
+
+Some other nice format strings are "%5d" that right-aligns line numbers on 5
+char boundary and "%05d" that zero-fills and right-justifies the line numbers.
+
+Here my [Perl printf cheat sheet][32] might come handy that lists all the
+possible format specifiers.
+
+**17. Print the total number of lines in a file (emulate wc -l).**
+
+
+    perl -lne 'END { print $. }'
+
+This one-liner uses the "END" block that Perl probably took as a feature from
+Awk language. The END block gets executed after the program has executed. In
+this case the program is the hidden loop over the input that was created by
+the "-n" argument. After it has looped over the input, the special variable "
+$. " contains the number of lines there was in the input. The END block prints
+this variable. The " -l " parameter sets the output record separator for
+"print" to a newline (so that we didn't have to print "$.\n").
+
+Another way to do the same is:
+
+
+    perl -le 'print $n=()=<>'
+
+This is a tricky one, but easy to understand if you know about Perl contexts.
+In this one-liner the " ()=<> " part causes the <> operator (the diamond
+operator) to evaluate in list context, that causes the diamond operator to
+read the whole file in a list. Next, " $n " gets evaluated in scalar context.
+Evaluating a list in a scalar context returns the number of elements in the
+list. Thus the " $n=()=<> " construction is equal to the number of lines in
+the input, that is number of lines in the file. The print statement prints
+this number out. The " -l " argument makes sure a newline gets added after
+printing out this number.
+
+This is the same as writing the following, except longer:
+
+
+    perl -le 'print scalar(()=<>)'
+
+And completely obvious version:
+
+
+    perl -le 'print scalar(@foo=<>)'
+
+Yet another way to do it:
+
+
+    perl -ne '}{print $.'
+
+This one-liner uses the eskimo operator "}{" in conjunction with "-n" command
+line argument. As I explained in one-liner #11, the "-n" argument forces Perl
+to assume a " while(<>) { } " loop around the program. The eskimo operator
+forces Perl to escape the loop, and the program turns out to be:
+
+
+
+    while (<>) {
+
+    }{                    # eskimo operator here
+
+        print $.;
+
+    }
+
+
+It's easy to see that this program just loops over all the input and after
+it's done doing so, it prints the " $. ", which is the number of lines in the
+input.
+
+**18. Print the number of non-empty lines in a file.**
+
+
+    perl -le 'print scalar(grep{/./}<>)'
+
+This one-liner uses the "grep" function that is similar to the grep Unix
+command. Given a list of values, " grep {condition} " returns only those
+values that match condition. In this case the condition is a regular
+expression that matches at least one character, so the input gets filtered and
+the "grep{/./}" returns all lines that were non empty. To get the number of
+characters we evaluate the list in scalar context and print the result. (As I
+mentioned in the previous one-liner list in scalar context evaluates to number
+of elements in the list).
+
+A golfer's version of this one-liner would be to replace "scalar()" with " ~~
+" (double bitwise negate), thus it can be shortened:
+
+
+    perl -le 'print ~~grep{/./}<>'
+
+This can be made even shorter:
+
+
+    perl -le 'print~~grep/./,<>'
+
+**19. Print the number of empty lines in a file.**
+
+
+    perl -lne '$a++ if /^$/; END {print $a+0}'
+
+Here I use variable  $a  to count how many empty lines have I encountered.
+Once I have finished looping over all the lines, I print the value of $a in
+the END block. I use " $a+0 " construction to make sure " 0 " gets output if
+no lines were empty.
+
+I could have also modified the previous one-liner:
+
+
+    perl -le 'print scalar(grep{/^$/}<>)'
+
+Or written it with " ~~ ":
+
+
+    perl -le 'print ~~grep{/^$/}<>'
+
+These last two versions are not as effective, as they would read the whole
+file in memory. Where as the first one would do it line by line.
+
+**20. Print the number of lines in a file that match a pattern (emulate grep
+-c).**
+
+
+    perl -lne '$a++ if /regex/; END {print $a+0}'
+
+This one-liner is basically the same as the previous one, except it increments
+the line counter $a by one in case a line matches a regular expression
+/regex/.

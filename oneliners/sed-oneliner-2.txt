@@ -1,0 +1,488 @@
+## 4. Selective Printing of Certain Lines.
+
+**44. Print the first 10 lines of a file (emulates "head -10").**
+
+
+    sed 10q
+
+This one-liner restricts the "q" (quit) command to line "10". It means that
+this command gets executed only when sed reads the 10th line. For all the
+other lines there is no command specified. When there is no command specified,
+the default action is to print the line as-is. This one-liner prints lines 1-9
+unmodified and at 10th line quits. Notice something strange? It was supposed
+to print first 10 lines of a file, but it seems that it just printed only the
+first 9... Worry not! The quit command is sneaky in its nature. Upon quitting
+with "q" command, sed actually prints the contents of pattern space and only
+then quits. As a result lines 1-10 get printed!
+
+Please see the [first part of the article][25] for explanation of "pattern
+space".
+
+**45. Print the first line of a file (emulates "head -1").**
+
+
+    sed q
+
+The explanation of this one-liner is almost the same as of the previous. Sed
+quits and prints the first line.
+
+A more detailed explanation - after the first line has been placed in the
+pattern space, sed executes the "q" command. This command forces sed to quit;
+but due to strange nature of the "q" command, sed also prints the contents of
+pattern space. As a result, only the first line gets printed.
+
+**46. Print the last 10 lines of a file (emulates "tail -10").**
+
+
+    sed -e :a -e '$q;N;11,$D;ba'
+
+This one-liner is tricky to explain. It always keeps the last 10 lines in
+pattern space and at the very last line of input it quits and prints them.
+
+I'll try to explain it. The first "-e :a" creates a label called "a". The
+second "-e" does the following: "$q" - if it is the last line, quit and print
+the pattern space. If it is not the last line, execute three commands "N",
+"11,$D" and "ba". The "N" command reads the next line of input and appends it
+to the pattern space. The line gets separated from the rest of the pattern
+space by a new line character. The "11,$D" command executes the "D" command if
+the current line number is greater than or equal to 11 ("11,$" means from 11th
+line to end of file). The "D" command deletes the portion of pattern space up
+to the first new line character. The last command "ba" branches to a label
+named "a" (beginning of script). This guarantees that the pattern space never
+contains more than 10 lines, because as line 11 gets appended to pattern
+space, line 1 gets deleted, as line 12 gets appended line 2 gets deleted, etc.
+
+**47. Print the last 2 lines of a file (emulates "tail -2").**
+
+
+    sed '$!N;$!D'
+
+This one-liner is also tricky. First of all, the "$!" address restricts
+commands "N" and "D" to all the lines except the last line.
+
+Notice how the addresses can be negated. If "$<command>" restricts a command
+to the last line, then "$!<command>" restricts the command to all **but** the
+last line. This can be applied to all restriction operations.
+
+In this one-liner the "N" command reads the next line from input and appends
+it to pattern space. The "D" command deletes everything in pattern space up to
+the first "\n" symbol. These two commands always keep only the most recently
+read line in pattern space. When processing the second-to-last line, "N" gets
+executed and appends the last line to the pattern space. The "D" does not get
+executed as "N" consumed the last line. At this moment sed quits and prints
+out the last two lines of the file.
+
+**48. Print the last line of a file (emulates "tail -1").**
+
+
+    sed '$!d'
+
+This one-liner discards all the lines except the last one. The "d" command
+deletes the current pattern space, reads in the next line, and restarts the
+execution of commands from the first. In this case it just loops over itself
+like "dddd...ddd" until it hits the last line. At the last line no command is
+executed ("$!d" restricted execution of "d" to all the lines but last) and the
+pattern space gets printed.
+
+Another way to do the same:
+
+
+    sed -n '$p'
+
+The "-n" parameter suppresses automatic printing of pattern space. It means
+that without an explicit "p" command (or other commands that act directly on
+the output stream), sed is dead silent. The "p" command stands for "print" and
+it prints the pattern space. This one-liner calls the "p" command at the very
+last line of input. All the other lines are silently discarded.
+
+**49. Print next-to-the-last line of a file.**
+
+Eric gives three different one-liners to do this. The first one prints a blank
+line if the file contains just 1 line:
+
+
+    sed -e '$!{h;d;}' -e x
+
+This one-liner executes the "h;d" commands for all the lines except the last
+one ("$!" restricts "h;d" commands to all lines except last). The "h" command
+puts the current line in hold buffer and "d" deletes the current line, and
+starts execution at the first sed command ("h;d" gets executed again, and
+again, ...). At every single line, that line gets copied to hold buffer. At
+the very last line "h;d" does not get executed. At this moment "x" gets a
+chance to execute. The "x" command exchanges the contents of hold buffer with
+pattern space. Remember that the previous line is still in the hold buffer.
+The "x" command puts it back in pattern space, and sed prints it! There you
+go, the next-to-last line was printed!
+
+In case there is just 1 line in the file, only the "x" command gets executed.
+As the hold buffer initially is empty, "x" puts emptiness in pattern space (I
+use word "put" here but it actually exchanges the pattern space with hold
+space). Now sed prints the contents of pattern space, but it's empty, so sed
+prints out just a blank line.
+
+The second prints the first line if the file contains just 1 line:
+
+
+    sed -e '1{$q;}' -e '$!{h;d;}' -e x
+
+This sed-one liner is divided in two parts. The first part "1{$q;}" handles
+the case when the file contains just a single line. The second part "$!{h;d;}
+x" is exactly the same as in the previous one-liner! Thus, I need to explain
+just the first part.
+
+The first part says - if it is the first line "1", then execute "$q". The "$q"
+command means - if it is the last line, then quit. What it effectively does is
+it quits if the first line is the last line (i.e. file contains just one
+line). Remember from one-liner #44 that before quitting sed prints the
+contents of pattern space. As a result, if the file contains just one line,
+sed prints it.
+
+The third prints nothing for 1 line files:
+
+
+    sed -e '1{$d;}' -e '$!{h;d;}' -e x
+
+This one-liner is again divided in two parts. The first part is "1{$d;}" and
+the second is exactly the same as in the previous two one-liners. I will
+explain just the first part.
+
+The first part says - if it is the first line "1", then execute "$d". The "$d"
+command means - if it is the last line, then delete the pattern space and
+start all over again. In case the first line is the last (only one line in
+file), there is nothing more to be done and sed quits, printing nothing.
+
+**50. Print only the lines that match a regular expression (emulates
+"grep").**
+
+
+    sed -n '/regexp/p'
+
+This one-liner suppresses automatic printing of pattern space with the "-n"
+switch and makes use of "p" command to print only the lines that match
+"/regexp/". The lines that do not match this regex get silently discarded. The
+ones that match get printed. That's it.
+
+Another one-liner that does the same:
+
+
+    sed '/regexp/!d'
+
+This one-liner deletes all the lines that do not match "/regexp/". The other
+lines get printed by default. The "!" before "d" command inverts the line
+matching.
+
+**51. Print only the lines that do not match a regular expression (emulates
+"grep -v").**
+
+
+    sed -n '/regexp/!p'
+
+This one-liner is the inverse of the previous.
+
+The "-n" prevents automatic printing of pattern space. The "/regexp/"
+restricts the "!p" command only to lines that match "/regexp/", but the "!"
+switch prevents "p" from acting on these lines. What happens is "p" acts on
+all lines that do not match "/regexp/", and they get "p"rinted.
+
+
+    sed '/regexp/d'
+
+This one-liner is the inverse of the previous (#50).
+
+This one-liner executed the "d" (delete) command on all lines that match
+"/regexp/", thus leaving only the lines that do not match. They get printed
+automatically.
+
+**52. Print the line immediately before regexp, but not the line containing
+the regexp.**
+
+
+    sed -n '/regexp/{g;1!p;};h'
+
+This one-liner saves each line in hold buffer with "h" command. If a line
+matches the regexp, the hold buffer (containing the previous line) gets copied
+to pattern space with "g" command and the pattern space gets printed out with
+"p" command. The "1!" restricts "p" not to print on the first line (as there
+are no lines before the first).
+
+**53. Print the line immediately after regexp, but not the line containing the
+regexp.**
+
+
+    sed -n '/regexp/{n;p;}'
+
+First of all, this one-liner disables automatic printing of pattern space with
+"-n" command line argument. Then, for all the lines that match "/regexp/",
+this one-liner executes "n" and "p" commands. The "n" command is the only
+command that depends on "-n" flag explicitly. If "-n" is specified it will
+empty the current pattern space and read in the next line of input. If "-n" is
+not specified, it will print out the current pattern space before emptying it.
+As in this one-liner "-n" is specified, the "n" command empties the pattern
+space, reads in the next line and then the "p" command prints that line out.
+
+**54. Print one line before and after regexp. Also print the line matching
+regexp and its line number. (emulates "grep -A1 -B1").**
+
+
+    sed -n -e '/regexp/{=;x;1!p;g;$!N;p;D;}' -e h
+
+First let's look at "h" command at the end of script. It gets executed on
+every line and stores the current line in pattern space in hold buffer. The
+idea of storing the current line in hold buffer is that if the next line
+matches "/regexp/" then the previous line is available in hold buffer.
+
+Now let's look at the complicated "/regexp/{=;x;1!p;g;$!N;p;D;}" command. It
+gets executed only if the line matches "/regexp/". The first thing it does is
+it prints the current line number with "=" command. Then, it exchanges the
+hold buffer with pattern space by using the "x" command. As I explained, the
+"h" command at the end of the script makes sure that the hold buffer always
+contains the previous line. Now we have put it in the pattern space with "x"
+command. Next, if it's not the first line, "1!p" prints the pattern space,
+effectively printing the previous line. Now the "g" command gets executed. It
+copies the original line that was just exchanged with hold buffer back to
+pattern space. Now the "$!N" executes. If it is not the last line, "N" appends
+the next line to the current pattern space (and separates them with "\n"
+char). Pattern space now contains the line that matched "/regexp/" and the
+next line. The "p" command prints that. "D" deletes the current line (line
+that matched "/regexp/") from pattern space and finally "h" gets executed
+again, that puts the contents of pattern space into hold buffer. As "D"
+deleted the current line, the next line was put in hold buffer.
+
+**55. Grep for "AAA" and "BBB" and "CCC" in any order.**
+
+
+    sed '/AAA/!d; /BBB/!d; /CCC/!d'
+
+This one-liner inverts the "d" command to be executed on lines that do not
+contain either "AAA", "BBB" or "CCC". If a line does not contain one of them,
+it gets deleted and sed proceeds to the next line. Only if all three of the
+patterns are present, does the sed print the line.
+
+**56. Grep for "AAA" and "BBB" and "CCC" in that order.**
+
+
+    sed '/AAA.*BBB.*CCC/!d'
+
+This one-liner deletes lines that do not match regexp "/AAA.*BBB.*CCC/". For
+example, a line "AAAfooBBBbarCCC" will get printed but "AAAfooCCCbarBBB" baz
+will not.
+
+It can also be written as:
+
+
+    sed -n '/AAA.*BBB.*CCC/p'
+
+This one-liner prints lines that contain AAA...BBB...CCC in that order.
+
+**57. Grep for "AAA" or "BBB", or "CCC".**
+
+
+    sed -e '/AAA/b' -e '/BBB/b' -e '/CCC/b' -e d
+
+This one-liner uses the "b" command to branch to the end of the script if the
+line matches "AAA" or "BBB" or "CCC". At the end of the script the line gets
+implicitly printed. If the line does not match "AAA" or "BBB" or "CCC", the
+script reaches the "d" command that deletes the line.
+
+
+    gsed '/AAA\|BBB\|CCC/!d'
+
+This one-liner works with GNU sed. GNU sed allows alternation operator | to be
+used to match separate things. It's a more compact way of saying match "AAA"
+or "BBB", or "CCC".
+
+If you are using GNU sed, then there is actually no need to escape the pipes
+|. You may specify the "-r" command line option to use extended regular
+expressions. This way this one liner becomes:
+
+
+    gsed -r '/AAA|BBB|CCC/!d'
+
+or
+
+
+    gsed -rn '/AAA|BBB|CCC/p'
+
+**58. Print a paragraph that contains "AAA". (Paragraphs are separated by
+blank lines).**
+
+
+    sed -e '/./{H;$!d;}' -e 'x;/AAA/!d;'
+
+First notice that this one-liner is divided in two parts for clearness. The
+first part is "/./{H;$!d;}" and the second part is "x;/AAA/!d".
+
+The first part has an interesting pattern match "/./". What do you think it
+does? Well, a line separating paragraphs would be a blank line, meaning it
+would not have any characters in it. This pattern matches only the lines that
+are not separating paragraphs. These lines get appended to hold buffer with
+"H" command. They also get prevented from printing with "d" command (except
+for the last line, when "d" does not get executed ("$!" restricts "d" to all
+but the last line)). Once sed sees a blank line, the "/./" pattern no longer
+matches and the second part of one-liner gets executed.
+
+The second part exchanges the hold buffer with pattern space by using the "x"
+command. The pattern space now contains the whole paragraph of text. Next sed
+tests if the paragraph contains "AAA". If it does, sed does nothing which
+results in printing the paragraph. If the paragraph does not contain "AAA",
+sed executes the "d" command that deletes it without printing and restarts
+execution at first command.
+
+**59. Print a paragraph if it contains "AAA" and "BBB" and "CCC" in any
+order.**
+
+
+    sed -e '/./{H;$!d;}' -e 'x;/AAA/!d;/BBB/!d;/CCC/!d'
+
+This one-liner is also split in two parts for clarity. The first part is
+exactly the same as the first part of previous one-liner. The second part is
+very similar to one-liner #55 and also the previous.
+
+The "x" command in the 2nd part does exactly the same as in previous one-
+liner, it exchanges the hold buffer, that contains the paragraph with pattern
+space. Next sed does three tests - it tests if the paragraph contains "AAA",
+"BBB" and "CCC". If the paragraph does not contain even one of them, the "d"
+command gets executed that purges the paragraph. If it contains all three
+patterns, sed happily prints the paragraph.
+
+**60. Print a paragraph if it contains "AAA" or "BBB" or "CCC".**
+
+
+    sed -e '/./{H;$!d;}' -e 'x;/AAA/b' -e '/BBB/b' -e '/CCC/b' -e d
+
+The first part is exactly the same as in previous two one-liners and does not
+require explanation. The second part that happens to be "-e 'x;/AAA/b' -e
+'/BBB/b' -e '/CCC/b' -e d" is almost exactly the same as in one-liner #57.
+
+The "x" command exchanges the paragraph stored in hold buffer with the pattern
+space. Then it tests if the pattern space (paragraph) contains "AAA", if it
+does, sed branches to end of script with "b" command, that happily makes sed
+print the paragraph. If "AAA" did not match, sed does exactly the same testing
+for pattern "BBB". If it again did not match, it tests for "CCC". If none of
+these patterns were found, sed executes the "d" command that deletes
+everything and restarts this one-liner.
+
+Here is another way to do the same with GNU sed:
+
+
+    gsed '/./{H;$!d;};x;/AAA\|BBB\|CCC/b;d'
+
+This one-liner is exactly the same as previous one. It just compresses the
+three tests for "AAA", "BBB" or "CCC" into one "/AAA\|BBB\|CCC/" as explained
+in one-liner #57.
+
+**61. Print only the lines that are 65 characters in length or more.**
+
+
+    sed -n '/^.\{65\}/p'
+
+This one-liner prints lines that are 65 characters in length or more. It does
+it by using a regular expression "^.{65}" that matches any 65 characters at
+the beginning of line. If there are less than 65 characters, the regex does
+not match and the line does not get printed (as automatic printing was
+disabled with "-n" command line option).
+
+**62. Print only the lines that are less than 65 chars.**
+
+
+    sed -n '/^.\{65\}/!p'
+
+This one-liner inverts the previous one. If the line matches 65 characters,
+then it is not printed "!p". If it does not match, it gets printed.
+
+Another way to do the same:
+
+
+    sed '/^.\{65\}/d'
+
+This one-liner deletes all lines that match 65 characters. All others
+implicitly get printed.
+
+**63. Print section of a file from a regex to end of file.**
+
+
+    sed -n '/regexp/,$p'
+
+This one-liner uses a tricky range match "/regex/,$". It matches lines
+starting from the first line that matches "/regex/" to the end of file "$".
+The "p" command prints these lines. All other lines get silently discarded.
+
+**64. Print lines 8-12 (inclusive) of a file.**
+
+
+    sed -n '8,12p'
+
+This is another type of range match. This range matches a section of lines
+between two lines numbers (inclusive). In this case it's lines [8 to 12].
+
+
+    sed '8,12!d'
+
+This is the same one-liner, just written differently. It deletes lines that
+are outside of range [8, 12] and prints those in this range.
+
+**65. Print line number 52.**
+
+
+    sed -n '52p'
+
+This one-liner restricts the "p" command to line "52". Only this line gets
+"p"rinted.
+
+
+    sed '52!d'
+
+This one-liner deletes all lines except line 52. Line 52 gets printed.
+
+
+    sed '52q;d'
+
+This one is the smartest. It quits at line 52 with "q" command. The previous
+two one-liners would loop over all the remaining lines and do nothing.
+Remember from one-liner #44 that quit command prints the pattern space with
+it. The "d" command makes sure that no other line gets printed while sed gets
+to line 52.
+
+**66. Beginning at line 3, print every 7th line.**
+
+
+    gsed -n '3~7p'
+
+This one-liner uses a line range match extension of GNU sed. A line range in
+format "first~step" matches every step'th line starting from first. In this
+one-liner it's "3~7", meaning match every 7th line starting from 3rd. The "-n"
+flag prevents printing any other lines, and "p" in "3~7p" prints the matched
+line.
+
+For everyone else, this one-liner works:
+
+
+    sed -n '3,${p;n;n;n;n;n;n;}'
+
+This one-liner executes commands "p;n;n;n;n;n;n" for lines starting the 3rd
+line. The "3,$" is a line range match that restricts commands by line numbers.
+The "$" means end of file and "3" means 3rd line.
+
+The "p;n;n;n;n;n;n" command prints the line, then skips 6, prints the 7th,
+skips 6, prints the 14th, etc. As it starts executing at line 3, the effect is
+- print line 3, skip 6, print line 10, skip 6, print line 17, ...**.** That
+is, print every 7th line beginning at 3rd.
+
+**67. Print section of lines between two regular expressions (inclusive).**
+
+
+    sed -n '/Iowa/,/Montana/p'
+
+This one-liner prints all the lines between the first line that matches a
+regular expression "Iowa" and the first line that matches a regular expression
+"Montana".
+
+It uses a range match "/start/,/finish/" that matches all lines starting from
+a line that matches "start" and ending with the first line that matches
+"finish".
+
+## An Important Comment About Ranges!
+
+I have an important comment about ranges. Ranges in form "/start/,/finish/"
+always match 2 lines or more. If "/finish/" is on the same line as "/start/"
+it will not work. Please see the [Sed FAQ 3.3][33] for more details.

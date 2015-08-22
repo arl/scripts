@@ -1,0 +1,280 @@
+## File Spacing
+
+**1. Double space a file.**
+
+
+    perl -pe '$\="\n"'
+
+This one-liner double spaces a file. There are three things to explain in this
+one-liner. The "-p" and "-e" command line options, and the "$\" variable.
+
+First let's start with the "-e" option. The "-e" option can be used to enter a
+Perl program directly in the command line. Typically you don't want to create
+source files for every small program. By using "-e" you can handily specify
+the program to execute on the command line.
+
+Next the "-p" switch. Specifying "-p" to a Perl program causes it to assume
+the following loop around your program:
+
+
+
+    while (<>) {
+
+        # your program goes here
+
+    } continue {
+
+        print or die "-p failed: $!\n";
+
+    }
+
+
+This construct loops over all the input, executes your code and prints the
+value of "$_". This way you can effectively modify all or some lines of input.
+The "$_" variable can be explained as an anonymous variable that gets filled
+with the good stuff.
+
+The "$\" variable is similar to ORS in Awk. It gets appended after every
+"print" operation. Without any arguments "print" prints the contents of "$_"
+(the good stuff).
+
+In this one-liner the code specified by "-e" is '$\="\n"', thus the whole
+program looks like this:
+
+
+
+    while (<>) {
+
+        $\ = "\n";
+
+    } continue {
+
+        print or die "-p failed: $!\n";
+
+    }
+
+
+What happens is that after reading each line, "$_" gets filled with it
+(including the existing line's newline), the "$\" gets set to a newline itself
+and "print" is called. As I already mentioned, without any arguments "print"
+prints the contents of "$_" and "$\" gets appended at the end. The result is
+that each line gets printed unmodified and it's followed by the "$\" which has
+been set to newline. The input has been double-spaced.
+
+There is actually no need to set "$\" to newline on each line. It was just the
+shortest possible one-liner that double-spaced the file. Here are several
+others that do the same:
+
+
+    perl -pe 'BEGIN { $\="\n" }'
+
+This one sets the "$\" to newline just once before Perl does anything (BEGIN
+block gets executed before everything else).
+
+
+    perl -pe '$_ .= "\n"'
+
+This one-liner is equivalent to:
+
+
+
+    while (<>) {
+
+        $_ = $_ . "\n"
+
+    } continue {
+
+        print or die "-p failed: $!\n";
+
+    }
+
+
+It appends another new-line at the end of each line, then prints it out.
+
+The cleanest and coolest way to do it is probably use the substitution "s///"
+operator:
+
+
+    perl -pe 's/$/\n/'
+
+It replaces the regular expression "$" that matches at the end of line with a
+newline, effectively adding a newline at the end.
+
+**2. Double space a file, except the blank lines.**
+
+
+    perl -pe '$_ .= "\n" unless /^$/'
+
+This one-liner double spaces all lines that are not completely empty. It does
+it by appending a newline character at the end of each line that is not blank.
+The "unless" means "if not". And "unless /^$/" means "if not 'beginning is end
+of line'". The condition "beginning is end of line" is true only for lines
+that contain the newline character.
+
+Here is how it looks when expanded:
+
+
+
+    while (<>) {
+
+        if ($_ !~ /^$/) {
+
+            $_ .= "\n"
+
+        }
+
+    } continue {
+
+        print or die "-p failed: $!\n";
+
+    }
+
+
+A better test that takes spaces and tabs on the line into account is this one:
+
+
+    perl -pe '$_ .= "\n" if /\S/'
+
+Here the line is matched against "\S". "\S" is a regular expression that is
+the inverse of "\s". The inverse of "\s" is any non-whitespace character. The
+result is that every line that has at least one non-whitespace character (tab,
+vertical tab, space, etc) gets double spaced.
+
+**3. Triple space a file.**
+
+
+    perl -pe '$\="\n\n"'
+
+Or
+
+
+    perl -pe '$_.="\n\n"'
+
+They are the same as one-liner #1, except that two new-lines get appended
+after each line.
+
+**4. N-space a file.**
+
+
+    perl -pe '$_.="\n"x7'
+
+This one-liner uses inserts 7 new lines after each line. Notice how I used
+'"\n" x 7' to repeat the newline char 7 times. The "x" operator repeats the
+thing on the left N times.
+
+For example:
+
+
+    perl -e 'print "foo"x5'
+
+would print "foofoofoofoofoo".
+
+**5. Add a blank line before every line.**
+
+
+    perl -pe 's//\n/'
+
+This one-liner uses the "s/pattern/replacement/" operator. It substitutes the
+first pattern (regular expression) in the "$_" variable with the replacement.
+In this one-liner the pattern is empty, meaning it matches any position
+between chars (and in this case it's the position before first char) and
+replaces it with "\n". The effect is that a newline char gets inserted before
+the line.
+
+**6. Remove all blank lines.**
+
+
+    perl -ne 'print unless /^$/'
+
+This one-liner uses "-n" flag. The "-n" flag causes Perl to assume to
+following loop around your program:
+
+
+
+    LINE:
+
+    while (<>) {
+
+        # your program goes here
+
+    }
+
+
+What happens here is that each line gets read by the diamond "<>" operator and
+is placed in the dolar underscore special variable "$_". At this moment you
+are free to do with it whatever you want. You specify that in your main
+program text.
+
+In this one-liner the main program is "print unless /^$/", it gets inserted in
+the while loop above and the whole Perl program becomes:
+
+
+
+    LINE:
+
+    while (<>) {
+
+        print unless /^$/
+
+    }
+
+
+Unraveling it further:
+
+
+
+    LINE:
+
+    while (<>) {
+
+        print $_ unless $_ =~ /^$/
+
+    }
+
+
+This one-liner prints all non-blank lines.
+
+A few other ways to do the same:
+
+
+    perl -lne 'print if length'
+
+This one uses the "-l" command line argument. The "-l" automatically chomps
+the input line (basically gets rid of newline at the end). Next the line is
+tested for its length. If there are any chars left, it evals to true and the
+line gets printed.
+
+
+    perl -ne 'print if /\S/'
+
+This one-liner behaves differently than the "print unless /^$/" one-liner. The
+"print unless /^$/" one-liner prints lines with spaces and tabs, this one
+doesn't.
+
+**7. Remove all consecutive blank lines, leaving just one.**
+
+
+    perl -00 -pe ''
+
+Ok, this is really tricky, ain't it? First of all it does not have any code,
+the -e is empty. Next it has a silly -00 command line option. This command
+line option turns paragraph slurp mode on. A paragraph is text between two
+newlines. All the other newlines get ignored. The paragraph gets put in "$_"
+and the "-p" option prints it out.
+
+Later I found a shorter version of this one-liner:
+
+
+    perl -00pe0
+
+**8. Compress/expand all blank lines into N consecutive ones.**
+
+
+    perl -00 -pe '$_.="\n"x4'
+
+This one-liner combines the previous one and one-liner #4. It slurps lines
+paragraph wise, then appends (N-1) new-line. This one-liner expands (or
+compresses) all new-lines to 5 ("\n" x 4 prints four, and there was one at the
+end of paragraph itself, so 5).
+
+## Have Fun!

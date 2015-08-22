@@ -1,0 +1,513 @@
+## 5. Selective Deletion of Certain Lines
+
+**68. Print all lines in the file except a section between two regular
+expressions.**
+
+
+    sed '/Iowa/,/Montana/d'
+
+This one-liner continues where the previous left off. [One-liner #67][31] used
+the range match "/start/,/finish/" to print lines between two regular
+expressions (inclusive). This one-liner, on the other hand, deletes lines
+between two regular expressions and prints all the lines outside this range.
+Just to remind you, a range "/start/,/finish/" matches all lines starting from
+the first line that matches a regular expression "/start/" to the first line
+that matches a regular expression "/finish/". In this particular one-liner the
+"d", delete, command is applied to these lines. The delete command prevents
+the matching lines from ever seeing the light.
+
+For example, suppose your input to this one-liner was:
+
+
+
+    Florida
+
+    <strong>Iowa
+
+    New York
+
+    San Jose
+
+    Montana</strong>
+
+    Texas
+
+    Fairbanks
+
+
+Then after the sed program has finished running, the output is:
+
+
+
+    Florida
+
+    Texas
+
+    Fairbanks
+
+
+We see this output because the lines from Iowa to Montana matched the
+"/Iowa/,/Montana/" range match (i put the matched lines in bold) and were
+deleted.
+
+**69. Delete duplicate, consecutive lines from a file (emulates "uniq").**
+
+
+    sed '$!N; /^\(.*\)\n\1$/!P; D'
+
+This one-liner acts as the "uniq" Unix utility. So how does it work? First of
+all, for every line that is not the very last line of input, sed appends the
+next line to the pattern space by the "N" command. The "N" command is
+restricted to all but the last line by "$!" restriction pattern. The newly
+appended line is separated from the previous line by the "\n" character. Next,
+the pattern space is matched against "/^\(.*\)\n\1$/" regular expression. This
+regular expression captures the previous line up to "\n" character and saves
+it in the match group "\1". Then it tests if the newly appended line is the
+same as the previous one. If it is not, the "P" gets executed. If it is, the
+"P" command does not get executed. The "P" command prints everything in the
+pattern space up to the first "\n" character. Next the "D" command executes
+and deletes everything up to the first "\n" char, leaving only the newly read
+line in pattern space. It also forces the sed script to begin from the first
+command.
+
+This way it loops over all lines, comparing two consecutive lines. If they are
+equal, the first line gets deleted, and a new line gets appended to what's
+left. If they are not equal, the first one gets deleted, and deleted.
+
+I think it's hard to understand what is going on from this description. I'll
+illustrate it with an example. Suppose this is the input:
+
+
+
+    foo
+
+    foo
+
+    foo
+
+    bar
+
+    bar
+
+    baz
+
+
+The first thing sed does is it reads the first line of input in pattern space.
+The pattern space now contains "foo". Now the "N" command executed. The
+pattern space now contains "foo\nfoo". Next the pattern space is tested
+against "/^\(.*\)\n\1$/" regular expression. This regular expression matches
+because "\(.*\)" is "foo" and "/^\(.*\)\n\1$/" is "foo\nfoo", exactly what we
+have in the pattern space. As it matched, the "P" command does not get
+executed. Now the "D" command executes, deleting the everything up to first
+"\n" from pattern space. The pattern space now contains just "foo". The "D"
+command forces sed to start from the first command. Now the "N" is executed
+again, the pattern space now contains "foo\nfoo" again and the same thing
+happens, "P" does not get executed and "D" deletes the first "foo", leaving
+the pattern space with just "foo" in it. Now the "N" gets executed once again,
+this time "bar" gets appended to pattern space. It contains "foo\nbar" now.
+The regular expression "/^\(.*\)\n\1$/" does not match and "P" gets executed,
+printing "foo". After that "D" gets executed wiping "foo" from pattern space.
+The pattern space now contains "bar". The commands restart and "N" gets
+executed, it appends the next "bar" to current pattern space. Now it contains
+"bar\nbar". Just like with "foo\nfoo", nothing gets printed, and "D" deletes
+the first "bar", leaving pattern space with "bar". The one-liner restarts its
+execution. Now "N" reads in the final line "baz". The pattern space contains
+"bar\nbaz" which does not match the regular expression. The "P" prints out the
+"bar" and "D" deletes "bar". Now "N" does not get executed because we are at
+the last line of input. The "$!N" restricts "N" to all lines but last. At this
+moment pattern space contains only the last "baz", the regular expression does
+not match, so "baz" gets printed. The "D" command executes, emptying the
+pattern space. There is no more input and sed quits.
+
+The output for this example is:
+
+
+
+    foo
+
+    bar
+
+    baz
+
+
+I think this is one of the most detailed explanations I have written about a
+single one liner. :)
+
+**70. Delete duplicate, nonconsecutive lines from a file.**
+
+
+    sed -n 'G; s/\n/&&/; /^\([ -~]*\n\).*\n\1/d; s/\n//; h; P'
+
+This is a very tricky one-liner. It stores the unique lines in hold buffer and
+at each newly read line, tests if the new line already is in the hold buffer.
+If it is, then the new line is purged. If it's not, then it's saved in hold
+buffer for future tests and printed.
+
+A more detailed description - at each line this one-liner appends the contents
+of hold buffer to pattern space with "G" command. The appended string gets
+separated from the existing contents of pattern space by "\n" character. Next,
+a substitution is made to that substitutes the "\n" character with two "\n\n".
+The substitute command "s/\n/&&/" does that. The "&" means the matched string.
+As the matched string was "\n", then "&&" is two copies of it "\n\n". Next, a
+test "/^\([ -~]*\n\).*\n\1/" is done to see if the contents of group capture
+group 1 is repeated. The capture group 1 is all the characters from space " "
+to "~" (which include all printable chars). The "[ -~]*" matches that.
+Replacing one "\n" with two was the key idea here. As "\([ -~]*\n\)" is greedy
+(matches as much as possible), the double newline makes sure that it matches
+as little text as possible. If the test is successful, the current input line
+was already seen and "d" purges the whole pattern space and starts script
+execution from the beginning. If the test was not successful, the doubled
+"\n\n" gets replaced with a single "\n" by "s/\n//" command. Then "h" copies
+the whole string to hold buffer, and "P" prints the new line.
+
+**71. Delete all lines except duplicate consecutive lines (emulates "uniq
+-d").**
+
+
+    sed '$!N; s/^\(.*\)\n\1$/\1/; t; D'
+
+This sed one-liner prints only the duplicate lines. This sed one-liner starts
+with reading in the next line from input with the "N" command. As I already
+mentioned, the current line and the next get separated by "\n" character after
+"N" executes. This one-liner also restrics "N" to all lines but last with "$!"
+restriction. Now a substitution "s/^\(.*\)\n\1$/\1/" is tried. Similarly to
+one-liner #69, this substitution replaces two repeating strings with one. For
+example, a string "foo\nfoo" gets replaced with just "foo". Now, if this
+substitution was successful (there was a repeated string), the "t" command
+takes the script to the end where the current pattern space gets printed
+automatically. If the substitution was not successful, "D" executes, deleting
+the non-repeated string. The cycle continues and this way only the duplicate
+lines get printed once.
+
+Let's take a look at an example. Suppose the input is:
+
+
+
+    foo
+
+    foo
+
+    bar
+
+    baz
+
+
+This one-liner reads the first line and immediately executes the "N" command.
+The pattern space now is "foo\nfoo". The substitution "s/^\(.*\)\n\1$/\1/" is
+tried and it's successful, because "foo" is repeated twice. The pattern space
+now contains just a single "foo". As the substitution was successful, "t"
+command branches to the end of the script. At this moment "foo" gets printed.
+Now the cycle repeats. Sed reads in "bar", the "N" command appends "baz" to
+"bar". The pattern space now is "bar\nbaz". The substitution is tried, but
+it's not successful, as "bar" is not repeated. As the substitution failed, "t"
+does nothing and "D" executes, deleting "bar" from pattern space. The pattern
+space is left with single "baz". Command "N" no longer executes as we reached
+end of file, substitution fails, "t" fails, and "D" deletes the "baz".
+
+The end result is:
+
+
+
+    foo
+
+
+Just as we expected - only the duplicate line got printed.
+
+**72. Delete the first 10 lines of a file.**
+
+
+    sed '1,10d'
+
+This one-liner restricts the "d" command to a range of lines by number. The
+"1,10" means a range matching lines 1 to 10 inclusive. On each of the lines
+the "d" command gets executed. It deletes the current pattern space, and
+restarts the commands from beginning. The default action for lines > 10 is to
+print the line.
+
+**73. Delete the last line of a file.**
+
+
+    sed '$d'
+
+This one-liner restricts the "d" command to the last line of file. It's done
+by specifying the special char "$" as the line to match. It matches only the
+last line. The last line gets deleted, but the others get printed implicitly.
+
+**74. Delete the last 2 lines of a file.**
+
+
+    sed 'N;$!P;$!D;$d'
+
+This one-liner always keeps two lines in the pattern space. At the very last
+line, it just does not output these last two. All the others before last two
+get output implicitly. Let's see how it does it. As soon as sed reads the
+first line of input in pattern space, it executes the first command "N". It
+places the 2nd line of input in pattern space. The next two commands "$!P" and
+"$!D" print the first part of pattern space up to newline character, and
+delete this part from pattern space. They keep doing it until the very last
+line gets appended to pattern space by "N" command. At this moment the last
+two lines are in pattern space and "$d" executes, deleting them both. That's
+it. Last two lines got deleted.
+
+If there is just one line of data, then it outputs it.
+
+**75. Delete the last 10 lines of a file.**
+
+
+    sed -e :a -e '$d;N;2,10ba' -e 'P;D'
+
+This is really straight forward one-liner. It always keeps 10 lines in
+pattern-space, by appending each new input line with "N", and deleting the
+11th excessive line with "D". Once the end of file is reached, it "d" the
+whole pattern space, deleting the last 10 lines.
+
+
+    sed -n -e :a -e '1,10!{P;N;D;};N;ba'
+
+This is also a straight forward one-liner. For the lines that are not 1-10, it
+appends them to pattern space with "N". For lines > 10, it prints the first
+line in pattern space with "P", appends another line with "N" and deletes the
+printed line with "D". The "D" command causes sed to branch to the beginning
+of script! The "N;ba" at the end never, ever gets executed again for lines >
+10. It keeps looping this way "P", "N", "D", always keeping 10 lines in
+pattern space and printing line-10 on each cycle. The "N" command causes
+script to quit if it tries to read past end of file.
+
+**76. Delete every 8th line.**
+
+
+    gsed '0~8d'
+
+This one-liner only works with GNU Sed only. It uses a special address range
+match "first~step" that matches every _step_'th line starting with the
+_first_. In this one-liner _first_ is 0 and _step_ is 8. Zero is not a valid
+physical line number, so the very first line of input does not match. The
+first line to match is 8th, then 16th, then 24th, etc. Each line that matches
+is deleted by "d" command.
+
+
+    sed 'n;n;n;n;n;n;n;d;'
+
+This is a portable version. The "n" command prints the current pattern space,
+empties it, and reads in the next line. It does so for every 7 lines, and 8th
+line gets deleted with "d". This process continues until all input has been
+processed.
+
+**77. Delete lines that match regular expression pattern.**
+
+
+    sed '/pattern/d'
+
+This one-liner executes the "d" command on all lines that match "/pattern/".
+The "d" command deletes the line and skips to the next line.
+
+**78. Delete all blank lines in a file (emulates "grep '.'".**
+
+
+    sed '/^$/d'
+
+The regular expression "/^$/" in this one-liner tests if the beginning of line
+matches the end of the line. Only the empty lines have this property and sed
+deletes them.
+
+Another way to do the same is:
+
+
+    sed '/./!d'
+
+This one-liner tests if the line matches at least one character. The dot "."
+in the regular expression matches any character. An empty line does not have
+any characters and it does not match this regular expression. Sed deletes all
+the lines that do not match this regular expression.
+
+**79. Delete all consecutive blank lines from a file (emulates "cat -s").**
+
+
+    sed '/./,/^$/!d'
+
+This one-liner leaves one blank line at the end of the file, if there are
+multiple blanks at the end. Other than that, all consecutive blanks are
+stripped.
+
+It uses an inverse range match "/start/,/finish/!" to "d" delete lines from
+first blank line, to first non-blank, non-inclusive.
+
+
+    sed '/^$/N;/\n$/D'
+
+This one-liner leaves one blank line at the beginning and end of the file, if
+there are multiple blanks at both sides. Other than that, all consecutive
+blanks are stripped.
+
+The consecutive empty lines get appended in pattern space by "/^$/N" command.
+The "/\n$/D" command matches and deletes blanks until only 1 is left. At that
+moment it no longer matches, and the line is output.
+
+**80. Delete all consecutive blank lines from a file except the first two.**
+
+
+    sed '/^$/N;/\n$/N;//D'
+
+In case of > 2 blank lines, this one-liner trims them down to two. There is a
+catch to this one-liner. Let me explain it first. See the last command "//D"?
+It's a shortcut for "/previous-match/D". In this case it's shortcut for
+"/\n$/D". Alright, now the one-liner itself. On every empty line, it appends
+the next to current pattern space with "/^$/N" command. Next it tests if the
+line just read in was actually a blank line with "/\n$/", if it is, it reads
+another line in with "N". At this moment it repeats the same test "/\n$/". If
+the line was a blank one again, it deletes the first blank line and restarts
+sed script from the beginning. Notice that at all times only 2 consecutive
+blank lines are in pattern space. This way any number of blank lines get
+deleted and only two are left.
+
+**81. Delete all leading blank lines at the top of a file.**
+
+
+    sed '/./,$!d'
+
+This one-liner inverts a match "match from the first non-blank line to end of
+file". It becomes "match from the beginning of file to last blank line".
+
+**82. Delete all trailing blank lines at the end of a file.**
+
+
+    sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'
+
+This one-liner accumulates blank lines in pattern space until it either hits
+end or hits a non-blank line. If it hits end, "$d" deletes the whole pattern
+space (which contained just the trailing blank lines) and quits. If however,
+it hits non-blank line, the whole pattern space gets printed implicitly and
+script continues as if nothing had happened.
+
+This one is a portable version.
+
+
+    gsed -e :a -e '/^\n*$/N;/\n$/ba'
+
+This is the same script, except a shorter version, made to work with Gnu Sed.
+
+**83. Delete the last line of each paragraph.**
+
+
+    sed -n '/^$/{p;h;};/./{x;/./p;}'
+
+This one-liner always keeps the previous line in hold buffer. It's
+accomplished by 2nd block of commands "/./{x;/./p;}". In this block, the
+pattern space (1 line) gets exchanged with hold buffer (1 line) by "x" command
+and if the hold buffer was not empty, it gets printed by "p". The next moment
+to note is what happens on the first empty line. That is the line after the
+paragraph. At this moment "/^$/{p;h;}" gets executed, that prints the blank
+line (but does not print the last line of paragraph!), and puts the blank line
+in hold buffer. Once a new paragraph is reached, the script executed just like
+it was the very first paragraph of the input.
+
+## 6. Special Sed Applications
+
+**84. Remove nroff overstrikes.**
+
+Nroff overstrikes are chars that are formatted to stand out in bold. They are
+achieved like in old typewriters, where you would do backspace and hit the
+same key again. In nroff it's key CHAR, CTRL+H, CHAR. This one-liner deletes
+the CHAR, CTRL+H, leaving just plain CHAR.
+
+
+    sed 's/.^H//g'
+
+Press Ctrl+V and then Ctrl+H to insert ^H literally in sed one-liner. It then
+uses the substitute command to delete any char "." followed by CTRL+H "^H".
+
+Another way to do the same is use a hex escape expression that works in most
+recent seds:
+
+
+    sed 's/.\x08//g'
+
+Yet another way is to use "echo" and enable interpretation of backslashed
+characters:
+
+
+    sed 's/.'`echo -e "\b"`'//g'
+
+**85. Print Usenet/HTTP/Email message header.**
+
+
+    gsed -r '/^\r?$/q'
+
+Usenet, HTTP and Email headers are similar. They are a bunch of text lines,
+separated from the body of the message with two new lines "\r\n\r\n". Some
+implementations might even go with just "\n\n". This one-liner quits on the
+first line that is either empty or contains "\r". In other words, it prints
+the message header and quits.
+
+**86. Print Usenet/HTTP/Email message body.**
+
+
+    sed '1,/^$/d'
+
+This one-liner uses a range match "1,/^$/" to delete lines starting from 1st,
+and ending with the first blank line (inclusive). As I explained in the
+previous one-liner #78 above, "/^$/" matches empty lines. All the lines before
+first blank line in a Usenet/Email message or a HTTP header are message
+headers. They get deleted.
+
+**87. Extract subject from an email message.**
+
+
+    sed '/^Subject: */!d; s///; q'
+
+This one-liner deletes all lines that do not match "^Subject: ". Then it re-
+uses the match in "s///" to delete "Subject: " part from the line, leaving
+just the real subject. Please notice how "s///" is equivalent to "s/previous-
+match//", where "previous-match" is "^Subject: *" in this one-liner.
+
+**88. Extract sender information from an email message.**
+
+
+    sed '/^From: */!d; s///; q'
+
+This one liner is equivalent to the previous one, except it prints sender
+information from email.
+
+**89. Extract email address from a "Name Surname <email@domain.com>" string.**
+
+
+    sed 's/.*< *//;s/ *>.*//;
+
+This one-liner strips all symbols before < symbol (and any whitespace after
+it), and stips all symbols after > symbol (including whitespace before it).
+That's it. What's left is email@domain.com.
+
+**90. Add a leading angle bracket and space to each line (quote an email
+message).**
+
+
+    sed 's/^/> /'
+
+This one-liner substitutes zero-width anchor "^" that matches beginning of
+line with "> ". As it's a zero-width anchor, the result is that "> " gets
+added to beginning of each line.
+
+**91. Delete leading angle bracket from each line (unquote an email
+message).**
+
+
+    sed 's/^> //'
+
+It does what it says, deletes two characters ">" and a space " " from the
+beginning of each line.
+
+**92. Strip HTML tags.**
+
+
+    sed -e :a -e 's/<[^>]*>//g;/</N;//ba'
+
+Sed is not made for parsing HTML. This is a very crude version of HTML tag
+eraser. It starts by creating a branch label named "a". Then on each line it
+substitutes "<[^>]*>" with nothing as many times as possible ("g" flag for
+s/// command). The "<[^>]*>" expression means match match symbol "<" followed
+by any other symbols that are not ">", and that ends with ">". This is a
+common pattern in regular expressions for non-greediness. Next, the one-liner
+tests if there are any open tags left on the line, if there are "N" reads the
+next line of input to make it work across multiple lines. "//ba" finally
+branches to the beginning of the script (it's short for "/previous-
+expression/ba" which in this case is "/</ba").
