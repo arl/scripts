@@ -1,6 +1,6 @@
 #! /bin/bash
 
-sheetspath="$(dirname $(realpath $0))/cheatsheets"
+cheatsheets="$(dirname $(realpath $0))/cheatsheets"
 
 function print_usage()
 {
@@ -29,7 +29,7 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
 	print_usage 0
 fi
 
-if [ ! -d "${sheetspath}" ]; then
+if [ ! -d "${cheatsheets}" ]; then
     echo cheatsheets directory "'"$cheapath"'" does NOT exist
     exit 1
 fi
@@ -37,11 +37,11 @@ fi
 cmdname=$1
 
 case $cmdname in
-	awk)	cheatfile="${sheetspath}/awk.cheat.sheet.txt" ;;
-	ed)		cheatfile="${sheetspath}/ed.unix.text.editor.cheat.sheet.txt" ;;
-	sed)	cheatfile="${sheetspath}/sed.stream.editor.cheat.sheet.txt" ;;
-	screen)	cheatfile="${sheetspath}/screen.cheat.sheet.txt" ;;
-	vi|vim)	cheatfile="${sheetspath}/vim-for-programmers.cheat.sheet.txt" ;;
+	awk)	cheatfile="${cheatsheets}/awk.cheat.sheet.txt" ;;
+	ed)		cheatfile="${cheatsheets}/ed.unix.text.editor.cheat.sheet.txt" ;;
+	sed)	cheatfile="${cheatsheets}/sed.stream.editor.cheat.sheet.txt" ;;
+	screen)	cheatfile="${cheatsheets}/screen.cheat.sheet.txt" ;;
+	vi|vim)	cheatfile="${cheatsheets}/vim-for-programmers.cheat.sheet.txt" ;;
 	*)		echo "no cheat sheet found for $cmdname"
 			exit 3
 			;;
