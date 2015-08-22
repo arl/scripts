@@ -1,0 +1,69 @@
+Julius Plenz - "Vim for Programmers"  Attraktor e.V. (rooms at the CCC Hamburg)
+on Wednesday, Sep 3rd 2008 at 8pm ->  Lokstedter Weg 72, Hamburg (Eppendorf)
+source: http://www.guckes.net/vim_for_programmers.en.txt
+
+An overview to the most important commands for programming within C -
+and some important options - all in 4000bytes, 68 rows, and 80 columns.
+edited+translated by Sven Guckes Fri Jul 16 17:23:42 2010
+remember: text/plain + charset=ascii rule!  :)
+
+= Files and Buffers =
+Edit File/Open Buffers: Save Buffers:             Delete/Quit Buffers:
+:e      edit a file     :w   write  into file     :q   quit current window
+:enew   edit new buffer :w!  write! into file     :qa  quit all     windows
+:sp     split buffer    :wq  write+quit           :qa! quit all - no saving
+:vsp    split vertically:x   write+quit           :q!  quit     - no saving
+:Sex    funfunfun :)    ZZ   write+quit           ZQ   quit     - no saving
+
+= Jump / Navigate =
+Einfach:              Puffer:                     Code:
+w   word forward      :b sub  buffer with "sub"   %    jump to matching brace
+W   WORD forward      :bn     to next buffer      [i   find curr identifier
+b   word backward     :bp     to prev buffer      [I   show all identifiers
+B   WORD backward     Ctrl-^  to "other" buffer   [d   show     macro  def
+{   paragraph back    ^I      jump forw in stack  [D   show all macros defs
+}   paragraph forw    ^O      jump back in stack  K    show manual to curr word
+
+Search:               Jumps:                      Windows:
+/   search forward    [^I   to identifier         ^W n    open a new window
+?   search backward   [^D   to macro              ^W f    open on curr filename
+n   next match        gd    to declaration        ^W c    close curr window
+N   prev match        gD    to global declaration ^W o    use only curr window
+*   curr word forw    [[    to start of function  ^W s    split curr window
+#   curr word backw   `.    to last change        ^W hjkl switch to adj window
+:se hls!              gi    to last insertion     ^W HJKL "move" curr window
+
+= Editing =
+Commands:             Text Objects:               Indentation:
+c   change            {i,a}w   current word       >>,<<    indent right,left
+d   delete            {i,a}p   current paragraph  =        automatic indentation
+y   yank   (copY)     {i,a}B   { block }          :retab!  change tabs to spaces!
+v   visual char  mode {i,a}()  ( block )          within Insert Mode:
+V   visual line  mode {i,a}t   HTML tag           ^N + ^P  expand curr prefix
+^V  visual block mode {i,a}"'` string in quotes   ^D + ^T  (de)indent curr line
+
+= Projects =
+Compile:              Tags: (tagfile!)           Folding:
+:make   compile       ctags -r .                 zf      create fold
+:copen  open error    ^] ^5   follow curr tag    za,zA   open   fold (recursive)
+:cn     next error    ^T ^O   jump back by tag   zc,zC   close  fold (recursive)
+:cp     prev error    :tag    jump to a tag      zE      eliminate all folds
+
+= Options =
+Short options names and values:   Long option names:
+set nocp                          nocompatible
+set ai ek et hid hls              autoindent esckeys expandtab hidden hlsearch
+set ru sc vb wmnu                 ruler showcmd visualbell wildmenu
+set noeb noet nosol               noerrorbells noexpandtab nostartofline
+set bs=2 fo=cqrt ls=2 shm=at      backspace formatoptions laststatus shortmess
+set sw=2 ts=4 tw=72 ww=<,>        shiftwidth tabstop textwidth whichwrap
+set comments=b:#,:%,fb:-,n:>,n:)  what are commented lines? -> text reformatting
+set list listchars=tab:>o,trail:o show those "invisible characters" (whitespace)
+set makeprg=latex\ %              the "make" program (calls compiler/translator)
+
+= Misc =
+editing in "virtual space"        :set ve=all
+history:                          q/ q: oder /<C-F>
+Tabbed Pages:                     :tabnew, gt, gT
+Registers - Copying and Inserting :reg "yy$ "yp vip"vy
+Macro recording and replaying:    qa qCq@C, @q -> @@   EOF
