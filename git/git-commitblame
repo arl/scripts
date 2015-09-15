@@ -1,0 +1,12 @@
+#! /bin/bash
+#
+# https://github.com/aurelien-rainone/scripts
+#
+# idea from http://mislav.uniqpath.com/2014/02/hidden-documentation/
+#
+# usage       : git-commitblame FILE LINENO
+#
+# description : print text and diff of the commit responsible
+#               for the last change of LINENO of FILE
+# TODO        : add a -h option
+git show $(git blame "${1}" -L "$2,$2" | awk '{print $1}')
