@@ -11,7 +11,7 @@ function askquestion()
 	shift
 	choices=( "$@" )
 
-	echo -n $question
+	echo -ne $question
 	while read -r -n 1 -s answer; do
 	  if [[ $answer = [${choices[0]}${choices[1]}] ]]; then
 		[[ $answer = [${choices[0]}] ]] && retval=0
