@@ -1,0 +1,4 @@
+#! /bin/bash
+# create a 'tags' file with gotags, including all files in and under
+# the current directory
+gotags -R=true . > tags
