@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+## Usage: circp SRCGLOB DST
+##   Cyclic copy 
+##
+## Example
+##   subsequent calls to:
+##     circp 'FOO*.txt' BAR.txt
+##   will transform to:
+##     - cp FOO1.txt BAR.txt
+##     - cp FOO2.txt BAR.txt
+##     - cp FOO3.txt BAR.txt
+##     - ...
+##     - cp FOOn.txt BAR.txt
+##   until n doesn't exist, in which case it will start again from 1
+##
+## Options:
+##   -h, --help    Display this message.
+##   -n            Dry-run; only show what would be done.
+#set -x
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-n) shift; DRY_RUN=1;;
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+
+  if [ $# -ne 2 ]; then
+    usage "wrong number of arguments"
+  fi
+  if [ $DRY_RUN -eq 1 ]
+    then
+    echo Dry-run: just show what would be done:
+  fi
+
+  SRC="${1}"
+  DST="${2}"
+  SOURCES=()
+  COUNTER=1
+
+  while true
+  do
+    f="${SRC//'*'/$COUNTER}"
+    stat "${f}" 1> /dev/null 2>&1 || break
+    SOURCES+=("${f}")
+    let COUNTER=COUNTER+1
+    echo  $COUNTER
+  done
+
+  for ((i=0; i < ${#SOURCES}; i++))
+  do
+    cmp --silent "${DST}" "${SOURCES[$i]}"
+    if [ $? -eq 0 ]
+      then
+      if [ $(($i + 1)) = ${#SOURCES[@]} ]
+        then
+        # cycle back to 1st element
+        src_idx=0
+      else
+        src_idx=$(($i + 1))
+      fi
+      if [ $DRY_RUN -eq 1 ]
+        then
+          echo cp "${BLOCK_VERSIONS[$src_idx]}" "${DST}"
+        else
+          cp "${BLOCK_VERSIONS[$src_idx]}" "${DST}"
+      fi
+      exit
+    fi
+  done
+  echo exiting without copying nothing...
+}
+
+main "$@"
