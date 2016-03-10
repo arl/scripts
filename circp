@@ -25,6 +25,9 @@ usage() {
 } 2>/dev/null
 
 main() {
+
+  DRY_RUN=0
+
   while [ $# -gt 0 ]; do
     case $1 in
     (-n) shift; DRY_RUN=1;;
@@ -38,9 +41,9 @@ main() {
   if [ $# -ne 2 ]; then
     usage "wrong number of arguments"
   fi
-  if [ $DRY_RUN -eq 1 ]
+  if [ $DRY_RUN -ne 0 ]
     then
-    echo Dry-run: just show what would be done:
+      echo Dry-run: just show what would be done.
   fi
 
   SRC="${1}"
@@ -69,11 +72,11 @@ main() {
       else
         src_idx=$(($i + 1))
       fi
-      if [ $DRY_RUN -eq 1 ]
+
+      echo cp "${SOURCES[$src_idx]}" "${DST}"
+      if [ $DRY_RUN -eq 0 ]
         then
-          echo cp "${BLOCK_VERSIONS[$src_idx]}" "${DST}"
-        else
-          cp "${BLOCK_VERSIONS[$src_idx]}" "${DST}"
+          cp "${SOURCES[$src_idx]}" "${DST}"
       fi
       exit
     fi
