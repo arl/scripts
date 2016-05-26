@@ -3,9 +3,9 @@
 ##   Cyclic copy 
 ##
 ## Example
-##   subsequent calls to:
+##   successive calls to:
 ##     circp 'FOO*.txt' BAR.txt
-##   will transform to:
+##   will be mapped to:
 ##     - cp FOO1.txt BAR.txt
 ##     - cp FOO2.txt BAR.txt
 ##     - cp FOO3.txt BAR.txt
@@ -16,7 +16,6 @@
 ## Options:
 ##   -h, --help    Display this message.
 ##   -n            Dry-run; only show what would be done.
-#set -x
 
 usage() {
   [ "$*" ] && echo "$0: $*"
