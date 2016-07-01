@@ -1,0 +1,28 @@
+#!/bin/sh
+## shows a list of the largest debian packages on the system, ordered by size
+## Usage:  largepkgs
+## Options:
+##   -h, --help    Display this message.
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-n) DRY_RUN=1;;
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  # this one line has been copy-pasted from : http://askubuntu.com/questions/57994
+  dpkg-query --show --showformat='${Package;-50}\t${Installed-Size}\n' | sort -k 2 -n | grep -v deinstall | awk '{printf "%.3f MB \t %s\n", $2/(1024), $1}'
+}
+
+main "$@"
