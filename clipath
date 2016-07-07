@@ -1,0 +1,29 @@
+#!/bin/sh
+## clipath takes a path copy a path to the clipboard
+## output path will be absolute, even if input is relative
+## clipath performs variable expansion
+##
+## Usage: clipath PATH
+## Options:
+##   -h, --help    Display this message.
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  readlink -e $1 | tr -d '\r\n' | xclip -sel cli
+}
+
+main "$@"
