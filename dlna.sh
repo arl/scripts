@@ -1,14 +1,14 @@
 # /usr/bin/env bash
-## dlna start (or restarts) an minidlna server
+## dlna starts or restarts your minidlna server
 ## As only the root user may modify the state of a service, sudo or gksudo will
-## be invoked, depending from where this script is called
+## be invoked, depending from where this script is called:
 ##     * bash : sudo
 ##     * gui/cairo-dock/anywhere else : gksudo
 ##
 ## Usage: dlna [-f]
 ## Options:
 ##   -h, --help    Display this message.
-##   -f, --force   Force full database rescan
+##   -f, --force   Force full database rescan.
 ##
 
 usage() {
