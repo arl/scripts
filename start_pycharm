@@ -1,0 +1,12 @@
+#! /bin/bash
+# Run Pycharm, with some predefined settings, as a background process. This 
+# allows to start pycharm in a virtualenv'ed shell session, inheriting the 
+# session environment, while keeping the session free for further use.
+
+main () {
+  local PYCHARM_FOLDER=/opt/pycharm-community-5.0.3
+  export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on'
+  "${PYCHARM_FOLDER}/bin/pycharm.sh" 2> /dev/null &
+}
+
+main $@
