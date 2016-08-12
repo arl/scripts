@@ -1,0 +1,16 @@
+# in case program crashes before even passing the main() function, probably
+there is library loading problem, in that case, set those variable before
+running the executable:
+
+```bash
+LD_DEBUG=all LD_DEBUG_OUTPUT=log.txt ./prog
+```
+
+Once the offending library has been found, manually preload it with:
+
+```bash
+LD_PRELOAD=/lib64/libpthread.so.0 ./prog
+```
+
+
+from: http://stackoverflow.com/questions/31579243/segmentation-fault-before-main-when-using-glut-and-stdstring
