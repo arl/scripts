@@ -6,12 +6,13 @@
 ## and try again
 ##
 ##   see http://dave.cheney.net/2013/06/19/stress-test-your-go-packages
-## Usage: gostress -race [TEST_ARGS]
+## Usage: gostress [options] [-- testoptions]
 ## Options:
 ##   -h, --help    Display this message.
 ##   -r, --race    Enable the race builder
 ##
-## TEST_ARGS
+## Test Options:
+##   --            Anything after -- is forwarded to the test executable
 
 usage() {
   [ "$*" ] && echo "$0: $*"
