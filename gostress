@@ -25,7 +25,7 @@ run() {
 
   while true ; do
     export GOMAXPROCS=$(( 1 + $(( RANDOM % 128 ))))
-    "./$PKG.test" "$@" 2>&1
+    "./$PKG.test" "$@" 2>&1 || echo -ne "\ngostress stopped due to test failure" && exit 1
   done
 }
 
