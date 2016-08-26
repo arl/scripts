@@ -1,0 +1,52 @@
+#!/bin/bash
+## Script to stress test your Go packages
+##
+## The goal is to be able to run the stress test for as long as you want
+## without a test failure. Once you achieve that, uncomment go test -c -race
+## and try again
+##
+##   see http://dave.cheney.net/2013/06/19/stress-test-your-go-packages
+## Usage: gostress -race [TEST_ARGS]
+## Options:
+##   -h, --help    Display this message.
+##   -r, --race    Enable the race builder
+##
+## TEST_ARGS
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+
+run() {
+  PKG=$(basename "$(pwd)")
+
+  while true ; do
+    export GOMAXPROCS=$(( 1 + $(( RANDOM % 128 ))))
+    "./$PKG.test" "$@" 2>&1
+  done
+}
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (-r|--race) RACE=1; shift; break;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+
+  if [ -n "$RACE" ]; then
+    go test -c -race
+  else
+    go test -c
+  fi
+
+  run "$@"
+}
+
+main "$@"
