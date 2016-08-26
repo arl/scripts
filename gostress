@@ -6,6 +6,7 @@
 ## and try again
 ##
 ##   see http://dave.cheney.net/2013/06/19/stress-test-your-go-packages
+##
 ## Usage: gostress [options] [-- testoptions]
 ## Options:
 ##   -h, --help    Display this message.
@@ -13,6 +14,10 @@
 ##
 ## Test Options:
 ##   --            Anything after -- is forwarded to the test executable
+
+# Authors:
+#   Dave Cheney (original idea)
+#   Aurélien Rainone (bash version with cli)
 
 usage() {
   [ "$*" ] && echo "$0: $*"
