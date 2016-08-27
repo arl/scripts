@@ -21,11 +21,15 @@ usage() {
 
 fat() {
   # from http://askubuntu.com/questions/57994
-  dpkg-query --show --showformat='${Package;-50}\t${Installed-Size}\n' | sort -k 2 -n | grep -v deinstall | awk '{printf "%.3f MB \t %s\n", $2/(1024), $1}'
+  dpkg-query --show --showformat='${Package;-50}\t${Installed-Size}\n' |
+    sort -k 2 -n |
+      grep -v deinstall |
+        awk '{printf "%.3f MB \t %s\n", $2/(1024), $1}'
 }
 
 _linux() {
-  dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d'
+  dpkg -l 'linux-*' |
+    sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d'
 }
 
 linux() {
