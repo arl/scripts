@@ -1,0 +1,80 @@
+#!/bin/sh
+## cb - easy interaction between shell and system clipboard
+##
+## cb lets you exchange data between the shell and the system clipboard.
+##
+## Examples of use:
+##  * copies file content to system clipboard:
+##       cb.sh FILE
+##
+##  * redirect command output to system clipboard:
+##       CMD | cb.sh
+##
+##  * pipe system clipboard content to a command:
+##       cb.sh | CMD
+##
+##  * write system clipboard content to a file:
+##       cb.sh > FILE
+##
+## Options:
+##   -h, --help    Display this message.
+##
+## Prerequisites:
+##   xclip command must be installed
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+prerequisites() {
+  command -v "xclip" >/dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo 'error: `xclip` command not found'
+    echo 'on Debian systems, install it with:'
+    echo 'sudo apt-get install xclip'
+    exit 1
+  fi
+}
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  prerequisites
+
+  # we have an argument, if it's a file its content will be forwarded to the
+  # system clipboard
+  [ $# -ge 1 -a -f "$1" ] && fromfile="$1"
+  if [ -n "${fromfile}" ]; then
+    xclip -sel cli < "${fromfile}" 
+    if [ $? -eq 0 ]; then
+      echo "cb: content of $fromfile has been copied to system clipboard"
+    fi
+    exit 0
+  fi
+
+  if ! [ -t 0 ]; then
+    # script stdin is connected, forward it to the system clipboard
+    xclip -sel cli
+    if [ $? -eq 0 ]; then
+      echo "cb: data copied to system clipboard"
+    fi
+    exit 0
+  fi
+
+  if ! [ -t 1 ]; then
+    # script stdout is connected, clipboar content will be forwarded to
+    # whatever is connected
+    xclip -o
+    exit 0
+  fi
+}
+
+main "$@"
