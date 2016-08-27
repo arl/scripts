@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+## morespace is a collection of tips, some useful, some less, to run when you
+## are in need of hard-drive space on a Debian based system.
+##
+## NOTE: no effective command will ever be run by this script, the only
+## commands run by this script are informative, the effective, the dangerous
+## ones will be executed by you. 
+##
+## Usage: morespace [options]
+## Options:
+##   -h, --help    Display this message.
+##   -f, --fat     Show the fattest debian packages, ordered by size.
+##   -l, --linux   Show old linux headers/images.
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+fat() {
+  # from http://askubuntu.com/questions/57994
+  dpkg-query --show --showformat='${Package;-50}\t${Installed-Size}\n' | sort -k 2 -n | grep -v deinstall | awk '{printf "%.3f MB \t %s\n", $2/(1024), $1}'
+}
+
+_linux() {
+  dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d'
+}
+
+linux() {
+
+  if [[ $(_linux) ]]; then
+    echo WARNING: Be careful with what you remove!
+    echo "this is your current's kernel version: $(uname -r)"
+  else
+    echo "No old linux headers nor images were found"
+  fi
+}
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (-f|--fat) fat; exit;;
+    (-l|--linux) linux; exit;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+}
+
+main "$@"
