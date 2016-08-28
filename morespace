@@ -53,6 +53,8 @@ main() {
     (*) break;;
     esac
   done
+
+  usage
 }
 
 main "$@"
