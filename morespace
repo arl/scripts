@@ -35,6 +35,7 @@ _linux() {
 linux() {
 
   if [[ $(_linux) ]]; then
+    _linux
     echo WARNING: Be careful with what you remove!
     echo "this is your current's kernel version: $(uname -r)"
   else
