@@ -70,8 +70,8 @@ main() {
   fi
 
   if ! [ -t 1 ]; then
-    # script stdout is connected, clipboar content will be forwarded to
-    # whatever is connected
+    # script stdout is connected, clipboard content will be piped into whatever
+    # it is connected to
     xclip -o
     exit 0
   fi
