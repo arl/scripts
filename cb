@@ -73,6 +73,8 @@ main() {
     # script stdout is connected, clipboard content will be piped into whatever
     # it is connected to
     xclip -o
+    # 
+    echo -n "\ncb: system clipboard content has been pasted" >&2
     exit 0
   fi
 }
