@@ -1,0 +1,37 @@
+#! /usr/bin/env python3
+
+# -*- coding: utf-8 -*-
+# vim: set ft=py:
+"""
+    msnip
+    ~~~~~~~~~~~~~~~~~~~~
+
+    Magic snippets
+
+    :copyright: Copyright 2016 by Aurélien Rainone
+    :license: MIT, see LICENSE for details.
+"""
+
+import sys
+import sqlite3
+import argparse
+import ipdb
+
+DEFAULT_DB = '$HOME/msnip.db'
+
+def main():
+    # conn = sqlite3.connect('example.db')
+    # ipdb.set_trace()
+    parser = argparse.ArgumentParser()
+    # parser.add_argument('-g', '--global')
+    parser.add_argument('-s', '--snippets', help="Use a different snippets database", default=DEFAULT_DB)
+    subparsers = parser.add_subparsers(dest="action")
+    add_parser = subparsers.add_parser('add')
+    add_parser.add_argument('-c', '--count')
+    list_parser = subparsers.add_parser('list')
+    args = parser.parse_args(sys.argv[1:])
+    print (sys.argv)
+
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
