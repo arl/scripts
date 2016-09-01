@@ -4,9 +4,9 @@
 # session environment, while keeping the session free for further use.
 
 main () {
-  local PYCHARM_FOLDER=/opt/pycharm-community-2016.2
+  local PYCHARM_FOLDER=/opt/pycharm-community-2016.2.2
   export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on'
   "${PYCHARM_FOLDER}/bin/pycharm.sh" 2> /dev/null &
 }
 
-main $@
+main "$@"
