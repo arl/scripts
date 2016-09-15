@@ -19,6 +19,13 @@ import ipdb
 
 DEFAULT_DB = '$HOME/msnip.db'
 
+
+def add_snippet(args):
+    print ('add snippet', args)
+
+def list_snippet(args):
+    print ('list snippet', args)
+
 def main():
     # conn = sqlite3.connect('example.db')
     # ipdb.set_trace()
@@ -26,11 +33,19 @@ def main():
     # parser.add_argument('-g', '--global')
     parser.add_argument('-s', '--snippets', help="Use a different snippets database", default=DEFAULT_DB)
     subparsers = parser.add_subparsers(dest="action")
+
     add_parser = subparsers.add_parser('add')
     add_parser.add_argument('-c', '--count')
+    add_parser.set_defaults(func=add_snippet)
+
     list_parser = subparsers.add_parser('list')
+    list_parser.set_defaults(func=list_snippet)
     args = parser.parse_args(sys.argv[1:])
+
     print (sys.argv)
+
+
+
 
 if __name__ == "__main__":
     # execute only if run as a script
