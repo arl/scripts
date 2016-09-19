@@ -25,7 +25,7 @@ main() {
     (*) break;;
     esac
   done
-  readlink -e $1 | tr -d '\r\n' | xclip -sel cli
+  readlink -e "$1" | tr -d '\r\n' | xclip -sel cli
 }
 
 main "$@"
