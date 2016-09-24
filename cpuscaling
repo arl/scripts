@@ -1,0 +1,45 @@
+#! /usr/bin/env bash
+## cpuscaling - get, enable or disable CPU frequency scaling
+## Usage: cpuscaling [powersave|performance]
+## Description:
+##   -  called with no arguments, cpuscaling tells the CPU scaling mode for all
+##      CPU's.
+##   -  called with 'powersave' 'performance', sets the cpu scaling of all
+##      CPU's. Should be run with super-user privileges.
+## Options:
+##   -h, --help    Display this message.
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (performance|powersave) MODE=$1; break;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+
+  if [ -z "$MODE" ]
+  then
+    for i in /sys/devices/system/cpu/cpu[0-7]
+    do
+      echo -ne "$i: "
+      cat $i/cpufreq/scaling_governor
+    done
+  else
+    for i in /sys/devices/system/cpu/cpu[0-7]
+    do
+      echo $MODE > $i/cpufreq/scaling_governor
+    done
+  fi
+}
+
+main "$@"
