@@ -32,12 +32,12 @@ main() {
     for i in /sys/devices/system/cpu/cpu[0-7]
     do
       echo -ne "$i: "
-      cat $i/cpufreq/scaling_governor
+      cat "$i/cpufreq/scaling_governor"
     done
   else
     for i in /sys/devices/system/cpu/cpu[0-7]
     do
-      echo $MODE > $i/cpufreq/scaling_governor
+      echo "$MODE" > "$i/cpufreq/scaling_governor"
     done
   fi
 }
