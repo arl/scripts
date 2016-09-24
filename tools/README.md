@@ -25,3 +25,4 @@ do
 done
 ```
 
+NOTE: in this repository there's the `cpuscaling` script that does just that.
