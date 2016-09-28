@@ -65,5 +65,3 @@ main() {
   print_template
 }
 main "$@"
-
-
