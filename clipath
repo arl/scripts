@@ -1,9 +1,8 @@
 #!/bin/sh
-## clipath takes a path copy a path to the clipboard
-## output path will be absolute, even if input is relative
-## clipath performs variable expansion
-##
-## Usage: clipath PATH
+## clipath resolves the path of the file given as argument and copies it to the
+## system clipboard. The copied paath will be an absolute path, where symlinks
+## are resolved and variables like $HOME or ~ are expanded
+## Usage: clipath [FILE]
 ## Options:
 ##   -h, --help    Display this message.
 ##
@@ -15,8 +14,6 @@ usage() {
 } 2>/dev/null
 
 main() {
-  [ $# -lt 1 ] && usage 2>&1
-
   while [ $# -gt 0 ]; do
     case $1 in
     (-h|--help) usage 2>&1;;
@@ -25,7 +22,8 @@ main() {
     (*) break;;
     esac
   done
-  readlink -e "$1" | tr -d '\r\n' | xclip -sel cli
+  FILE="${1:-.}"
+  readlink -e "${FILE}" | tr -d '\r\n' | xclip -sel cli
 }
 
 main "$@"
