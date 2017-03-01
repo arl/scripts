@@ -36,7 +36,7 @@ main() {
   # fullrescan is not always necessary, seems to depend on the version
   if [[ $FORCE ]]; then
     echo restarting minidlna service with full database rescan
-    $SUDO minidlnad -R -f /etc/minidlna.conf && sudo service minidlna restart 
+    $SUDO minidlnad -v -R -f /etc/minidlna.conf && sudo service minidlna restart 
   else
     echo restarting minidlna service
     $SUDO service minidlna restart
