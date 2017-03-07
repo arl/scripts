@@ -2,29 +2,29 @@
 
 ## Benchmarks
 
-### Only run one benchmark (without any tests)
+### Run only one benchmark (and no tests)
 
 ```bash
-go test -bench BenchmarkName -run XXX
+go test -bench MYBENCH -run nope
 ```
 
-### Generate a svg benchmark graphic
+### Generate benchmark comparisons as SVG
 
-Get the tools:
+Go get the tools:
 
 ```bash
 go get github.com/ajstarks/svgo/benchviz
 go get golang.org/x/tools/cmd/benchcmp
 ```
 
-Generate versions to compare:
+Generate two versions of the same benchmarks:
 
 ```bash
 go test -bench CNQuadtreeCreation -run XXX > old
 go test -bench CNQuadtreeCreation -run XXX > new
 ```
 
-Finally, generate the svg image:
+Generate the svg image:
 
 ```bash
 benchcmp old new | benchviz > out.svg
