@@ -22,7 +22,7 @@ main() {
     (*) break;;
     esac
   done
-  godoc -http=:6060 -play -index
+  godoc -http=:6060
 }
 
 main "$@"
