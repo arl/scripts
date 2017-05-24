@@ -1,0 +1,43 @@
+#! /usr/bin/env bash
+## View a markdown file in the terminal
+##
+## requires `lynx` and `markdown` to be present
+##
+## Usage: mdlynx [MARKDOWN_FILE]
+## Options:
+##   -h, --help    Display this message.
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-n) DRY_RUN=1;;
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  [[ $# -eq 0 ]] && usage
+
+  # check dependencies
+  if ! type markdown > /dev/null 2>&1; then
+    echo 'markdown not installed:'
+    echo '    sudo apt-get install markdown'
+    exit
+  fi
+  if ! type lynx > /dev/null 2>&1; then
+    echo 'lynx not installed:'
+    echo '    sudo apt-get install lynx'
+    exit
+  fi
+  markdown $1 | lynx -stdin
+}
+
+main "$@"

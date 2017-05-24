@@ -1,7 +1,0 @@
-#! /bin/bash
-# usage: lynxmd README.md
-# convert on-the-fly a markdown file (given as $1) to HTML and open the
-# result with lynx
-# NOTE: markdown and lynx are obviously required for this to work
-#
-markdown $1 | lynx -stdin
