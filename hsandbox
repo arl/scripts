@@ -257,7 +257,12 @@ class PascalHacking(Hacking):
 class ShellHacking(Hacking):
     label = "Shell (sh)"
     filename = "sandbox.sh"
-    command = "sh sandbox.sh"
+
+
+class BashHacking(Hacking):
+    label = "Bash (sh)"
+    filename = "sandbox.sh"
+    command = "bash sandbox.sh"
 
 class ClojureHacking(Hacking):
     filename = "sandbox.clj"
@@ -292,6 +297,7 @@ LANGUAGES = {
     "pas": PascalHacking,
     "m": ObjCHacking,
     "sh": ShellHacking,
+    "bash": BashHacking,
     "clj": ClojureHacking,
     }
 
