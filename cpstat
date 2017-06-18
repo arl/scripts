@@ -1,0 +1,18 @@
+#! /usr/bin/env bash
+## cpstat shows progress of running cp instance
+## from https://unix.stackexchange.com/questions/66795
+
+function cpstat()
+{
+  local pid="${1:-$(pgrep -xn cp)}" src dst
+  [[ "$pid" ]] || return
+  while [[ -f "/proc/$pid/fd/3" ]]; do
+    read -r src dst < <(stat -L --printf '%s ' "/proc/$pid/fd/"{3,4})
+    (( src )) || break
+    printf 'cp %d%%\r' $((dst*100/src))
+    sleep 1
+  done
+  echo
+}
+
+cpstat "$@"
