@@ -35,9 +35,11 @@ _linux() {
 linux() {
 
   if [[ $(_linux) ]]; then
+    echo Unused linux headers/images:
     _linux
-    echo WARNING: Be careful with what you remove!
-    echo "this is your current's kernel version: $(uname -r)"
+    echo
+    echo "Your current kernel version is: '$(uname -r)'"
+    echo Be careful with what you remove!
   else
     echo "No old linux headers nor images were found"
   fi
