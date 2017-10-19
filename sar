@@ -1,0 +1,76 @@
+#!/bin/bash
+if [ $1 = '-h' ] || [ $1 = '--help' ] || [ $1 = '-?' ]; then
+  echo "Usage: ./sar.sh <search word> <replace with> <folder>"
+  echo "Example: ./sar.sh foo bar /home/user/folder/*.txt"
+  echo "The script can also be run in interactive mode without parameters."
+  exit
+fi
+
+clear
+
+if [ -z $1 ]; then
+  while [ -n $word1 ]; do
+    clear
+    echo -e "\n Wildcards such as \"*\" or "?" are allowed.\n Example: log-* \n"
+    read -p " Enter phrase to search for: " word1
+  break
+  done
+else
+  word1=$1
+fi
+
+if [ -z $2 ]; then
+  while [ -z $word2 ]; do
+    clear
+    echo
+    read -p " Enter text to replace with: " word2
+  break
+  done
+else
+  word2=$2
+fi
+
+if [ -z $3]; then
+  clear
+  echo -e "\n You can search inside specific file types by entering \"foldername/*.extension"\"
+  echo " Example: /var/log/*.txt"
+  echo -e "\n Current dir: `pwd`"
+  echo -ne "\n Subfolders: "
+  ls -d */
+  echo
+  read -p "Enter folder to search in (Enter for current dir): " folder
+    if [ -z $folder ]; then
+      folder=`pwd`
+    fi
+else
+  folder=$3
+fi
+
+final() {
+  clear
+  echo -e "\n Word to search for: $word1"
+  echo " Word to replace it with: $word2"
+  echo -e " Remember that word replacements are done recursivly, so any subfolders will be included.\n"
+read -n 1 -s -p " Selected folder is $folder, does this look ok? (y/n) " choice
+  if [ "$choice" = 'y' ]; then
+    counter=0
+    for i in `grep -Rl $word1 $folder`; do
+      sed -i "s/${word1}/${word2}/g" $i;
+      (( counter++ ))
+    done
+    if [ -z $i ]; then
+      clear
+      echo -e "\n No replacements were made.\n"
+    else
+      clear
+      echo -e "\n $counter replacements were made.\n"
+    fi
+  elif [ $choice = 'n' ]; then
+    clear
+    exit
+  else
+    final
+  fi
+}
+
+final
