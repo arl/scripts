@@ -1,0 +1,35 @@
+#! /usr/bin/env bash
+## reset-audio.sh reloads audio card drivers when things go wrong
+## Usage: reset-audio.sh [--reload|--list|--help]
+## Options:
+##   -h, --help    Display this message.
+##   -r, --reload  Kill sound daemon and reload audio driver.
+##   -l, --list    Lists audio cards.
+## Options:
+##   -h, --help    Display this message.
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  MODE=""
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (-r|--reload)
+      pulseaudio -k && sudo alsa force-reloadi; exit;;
+    (-l|--list)
+      pacmd list-cards; exit;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  usage
+}
+
+main "$@"
