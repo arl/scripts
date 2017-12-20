@@ -21,7 +21,7 @@ main() {
     case $1 in
     (-h|--help) usage 2>&1;;
     (-r|--reload)
-      pulseaudio -k && sudo alsa force-reloadi; exit;;
+      pulseaudio -k && sudo alsa force-reload; exit;;
     (-l|--list)
       pacmd list-cards; exit;;
     (--) shift; break;;
