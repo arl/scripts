@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 
 # recursively look for the last n (default 1) modified files in a directory
