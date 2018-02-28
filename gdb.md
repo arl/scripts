@@ -17,3 +17,13 @@ Hardware read watchpoint 2: *0xfeedface
 ```
 
 Use clear to remove a watchpoint (as breakpoints)
+
+
+# expressions
+
+To make gdb print a value after each step:
+
+```
+gdb$ display mystruct.myval
+```
+
