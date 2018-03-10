@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /bin/bash
 ## Create a bash script from STRING, or standard input, to standard output
 ## Usage: scriptify [options] STRING
 ## Options:
@@ -14,7 +14,7 @@ usage() {
 print_template() {
 
   cat <<EOF
-#! /usr/bin/env bash
+#! /bin/bash
 ## myscript does this and that...
 ## Usage: myscript [options] ARG1
 ## Options:
