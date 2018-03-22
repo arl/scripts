@@ -8,7 +8,7 @@ Debugger's willingness to use watchpoint hardware is 1.
 ```
 
 watch: gdb will break when a write occurs
-rwatch: gdb will break wnen a read occurs
+rwatch: gdb will break when a read occurs
 awatch: gdb will break in both cases
 
 ```
