@@ -26,8 +26,21 @@ To make gdb print a value after each step:
 ```
 gdb$ display mystruct.myval
 ```
+
+
 # lock thread while stepping
 
 ```
 set scheduler-locking step
+```
+
+
+# debug program reading stdin
+
+```sh
+gdb /path/to/binary
+
+>>> set args arg1 arg2 < file
+>>> run
+
 ```
