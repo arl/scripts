@@ -1,11 +1,15 @@
-# Development
+## Development
 
-# System administration
-[ssh](./ssh/README)
+## System administration
+- [ssh/scp](./ssh/README)
 
-# Scripts
+## Scripts
 
-# Go
+## Go
 
-# Snippets
+## Snippets
 - bash
+
+## Cheatsheets
+
+- [awk](./cheatsheets/awk.cheat.sheet)
