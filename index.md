@@ -1,7 +1,7 @@
 # Development
 
 # System administration
-[ssh](./ssh/README.md)
+[ssh](./ssh/README)
 
 # Scripts
 
