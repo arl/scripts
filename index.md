@@ -2,6 +2,7 @@
 
 ## System administration
 - [ssh/scp](./ssh/README)
+- [packer](./packer)
 
 ## Scripts
 
