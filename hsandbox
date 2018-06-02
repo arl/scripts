@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 """
 The Hacking Sandbox - hsandbox
 
@@ -384,7 +384,7 @@ def editor(hacking):
         if cmd_args:
             cmd += " " + cmd_args
     open(".hsandbox-editor-running", "w").close()
-    os.system("%s %s" % (cmd, hacking.filename))
+    os.system("nvim %s" % (hacking.filename))
     shutil.copy(hacking.filename, os.path.join(HSANDBOX_DIR, hacking.filename))
     os.unlink(".hsandbox-editor-running")
 
