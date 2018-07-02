@@ -14,6 +14,12 @@
 
     git rebase -i --root master
 
+## Delete a remote-tracking branch
+
+When a obsolete remote branch doesn't exist anymore upstream
+
+    git branch -rd origin/obsolete-branch
+
 ## Mirroring a repository
 
 Create a bare mirrored clone of the repository.
