@@ -57,3 +57,9 @@ makepkg should have create a file in the directory with the filetype
 
     sudo pacman -U x.pkg.tar.xz
 
+
+# Yaourt tips
+
+yaourt -Syuua --noconfirm
+
+Synchronize and update packages, with AUR support.
