@@ -1,15 +1,12 @@
 # /usr/bin/env bash
 ## dlna starts or restarts your minidlna server
-## As only the root user may modify the state of a service, sudo or gksudo will
-## be invoked, depending from where this script is called:
-##     * bash : sudo
-##     * gui/cairo-dock/anywhere else : gksudo
-##
 ## Usage: dlna [-f]
 ## Options:
 ##   -h, --help    Display this message.
 ##   -f, --force   Force full database rescan.
 ##
+
+set -eu
 
 usage() {
   [ "$*" ] && echo "$0: $*"
@@ -28,19 +25,10 @@ main() {
     esac
   done
 
-  PARENT_COMMAND="$(ps -o comm= $PPID)"
-  SUDO=$(which gksudo)
-  if [[ $PARENT_COMMAND == "bash" ]]; then
-    SUDO=$(which sudo)
-  fi
-  # fullrescan is not always necessary, seems to depend on the version
-  if [[ $FORCE ]]; then
-    echo restarting minidlna service with full database rescan
-    $SUDO minidlnad -v -R -f /etc/minidlna.conf && sudo service minidlna restart 
-  else
-    echo restarting minidlna service
-    $SUDO service minidlna restart
-  fi
+  echo 'starting minidlnad in backgorund'
+  minidlnad -f /home/$USER/.config/minidlna/minidlna.conf -P /home/$USER/.config/minidlna/minidlna.pid
+  echo 'tailing log (minidlnad is running)'
+  tail -f /home/$USER/.config/minidlna/minidlna.log
 }
 
 main "$@"
