@@ -39,3 +39,7 @@ push.
 
     git fetch -p origin
     git push --mirror
+
+## Interactive stashing
+
+    git stash save -p
