@@ -7,6 +7,11 @@
     pacman -Qdtq
 
 
+### Remove orphaned packages
+
+    pacman -Rns $(pacman -Qtdq)
+
+
 ### List explicitely installed packages
 
     pacman -Qqet
