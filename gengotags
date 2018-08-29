@@ -1,9 +1,13 @@
 #! /bin/bash
 # create a 'tags' file with gotags, including all files in and under
 # the current directory
-pushd . > /dev/null
-DIR=${1:-$PWD}
-cd "${DIR}"
-gotags -R=true "${DIR}" > tags
-if [ $? -eq 0 ]; then echo go tags generated in \""${DIR}"\"; else echo "an error occured, tags NOT generated"; fi
-popd > /dev/null
+DST="./tags"
+if gotags -f "$DST" -R .
+then
+  echo go tags generated in ${DST}
+else
+    echo "error : ${DST} not generated"
+fi
+
+#if [ $? -eq 0 ]; then echo go tags generated in \""${DIR}"\"; else echo "an error occured, tags NOT generated"; fi
+#popd > /dev/null
