@@ -25,7 +25,7 @@ main() {
     esac
   done
 
-  echo 'starting minidlnad in backgorund'
+  echo 'starting minidlnad in background'
   minidlnad -f /home/$USER/.config/minidlna/minidlna.conf -P /home/$USER/.config/minidlna/minidlna.pid
   echo 'tailing log (minidlnad is running)'
   tail -f /home/$USER/.config/minidlna/minidlna.log
