@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if ! [ -n "$TMUX" ]; then
+  echo not in tmux!
+  exit 1
+fi
+
+gotty tmux attach-session -t $(tmux display-message -p '#S')
