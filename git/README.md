@@ -43,3 +43,18 @@ push.
 ## Interactive stashing
 
     git stash save -p
+
+## What Git I do (with git-extras)
+
+    git standup -d 8 -D short
+
+## Advanced blame!
+
+Find commits either adding or removing a string
+
+    git log -c -S'STRING' /path/to/file
+
+If you want the last commit in which STRING existed and you know a commit
+in which for sure it was present
+
+    git blame --reverse START_COMMIT.. /path/to/file
