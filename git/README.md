@@ -58,3 +58,10 @@ If you want the last commit in which STRING existed and you know a commit
 in which for sure it was present
 
     git blame --reverse START_COMMIT.. /path/to/file
+
+## Git-LFS pain in the ass while rebasing
+
+    git lfs uninstall
+    git reset --hard # assuming there are no changes to keep!
+    git lfs install
+    git lfs pull
