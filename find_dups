@@ -1,0 +1,29 @@
+#! /bin/bash
+## find_dups find duplicate files in current directory,
+## search recursively.
+## Usage: find_dups
+## Options:
+##   -h, --help    Display this message.
+##
+## found: https://unix.stackexchange.com/questions/277697
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  
+  find . ! -empty -type f -exec md5sum {} + | sort | uniq -w32 -dD
+}
+
+main "$@"
