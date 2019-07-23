@@ -65,3 +65,12 @@ in which for sure it was present
     git reset --hard # assuming there are no changes to keep!
     git lfs install
     git lfs pull
+
+## Split/Edit commits
+
+    git rebase -i ...
+    mark commit(s) to "edit"
+    git reset HEAD^ # reset state to the previous commit
+    git add         # split into...
+    git commit      # ...multiple commits
+    git rebase --continue
