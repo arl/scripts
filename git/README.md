@@ -74,3 +74,10 @@ in which for sure it was present
     git add         # split into...
     git commit      # ...multiple commits
     git rebase --continue
+
+
+# Looks for all commits touching a particular file
+
+    git log --follow -- filename
+
+    Add --all across all branches
