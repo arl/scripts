@@ -1,0 +1,39 @@
+#! /bin/bash
+## reset-mouse resets the psmouse kernel modules
+## this is a temporary workaround to fix the two-fingers scroll stopping to work
+## after a suspend, generally this happens on thinkpad.
+## Usage: reset-mouse
+## Options:
+##   -h, --help    Display this message.
+##   -n            Dry-run; only show what would be done.
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-n) DRY_RUN=1; break;;
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+
+  if [ -n "$DRY_RUN" ]; then 
+    echo sudo modprobe -r psmouse
+    echo sudo modprobe psmouse
+  else 
+    sudo modprobe -r psmouse
+    echo psmouse kernel modules have been removed
+    sudo modprobe psmouse
+    echo psmouse kernel modules have been added
+  fi
+}
+
+main "$@"
