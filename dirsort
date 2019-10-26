@@ -1,0 +1,38 @@
+#! /bin/bash
+## Sorts the N biggest files in a directory by size (recursively).
+## Usage: dirsort [DIR] [N]
+##  DIR defaults to .
+##  N defaults to 10
+## Options:
+##   -h, --help    Display this message.
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+ 
+  DIR=.
+  N=10
+  if [ $# -gt 1 ]; then
+    DIR="${1}"
+    shift
+  fi
+  if [ $# -eq 1 ]; then
+    N="${1}"
+  fi
+  du -a "${DIR}" | sort -n -r | head -n $N
+}
+
+main "$@"
