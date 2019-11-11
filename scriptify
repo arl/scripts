@@ -5,6 +5,8 @@
 ##   -h, --help    Display this message.
 ##
 
+set -eu
+
 usage() {
   [ "$*" ] && echo "$0: $*"
   sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
