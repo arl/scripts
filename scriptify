@@ -33,7 +33,7 @@ usage() {
 main() {
   while [ \$# -gt 0 ]; do
     case \$1 in
-    (-n) DRY_RUN=1;;
+    (-n) shift; DRY_RUN=1;;
     (-h|--help) usage 2>&1;;
     (--) shift; break;;
     (-*) usage "\$1: unknown option";;
