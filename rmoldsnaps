@@ -1,0 +1,45 @@
+#! /bin/bash
+## rmoldsnaps removes old revisions of snaps
+## Usage: rmoldsnaps [options]
+## Options:
+##   -h, --help    Display this message.
+##   -n            Dry-run; only show what would be removed.
+##
+## Warning: close all snaps before running this!
+##
+
+set -eu
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-n) shift; DRY_RUN=1;;
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+
+  if  [[ -v DRY_RUN ]]; then
+    echo The following unused snaps would be removed
+    LANG=en_US.UTF-8 snap list --all | awk '/disabled/{print $1, $3}'
+    echo
+    echo \#\#\# CLOSE ALL SNAPS BEFORE RUNNING THIS! \#\#\#
+    echo
+    exit
+  fi
+
+  LANG=en_US.UTF-8 snap list --all | awk '/disabled/{print $1, $3}' |
+  while read snapname revision; do
+    snap remove "$snapname" --revision="$revision"
+  done
+}
+
+main "$@"
