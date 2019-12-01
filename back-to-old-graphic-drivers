@@ -1,0 +1,2 @@
+$ sudo apt-get install ppa-purge
+$ sudo ppa-purge ppa:oibaf/graphics-drivers
