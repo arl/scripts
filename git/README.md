@@ -44,20 +44,24 @@ push.
 
     git stash save -p
 
-## What Git I do (with git-extras)
+## What did I do (with git-extras)
 
     git standup -d 8 -D short
 
 ## Advanced blame!
 
-Find commits either adding or removing a string
+Find commits either adding or removing a specific string
 
     git log -c -S'STRING' /path/to/file
 
-If you want the last commit in which STRING existed and you know a commit
+You want the last commit in which STRING existed and you know a commit
 in which for sure it was present
 
     git blame --reverse START_COMMIT.. /path/to/file
+
+You want to see the evolution of a range of lines through Git history
+
+    git log -L 15,23:filename.txt
 
 ## Git-LFS pain in the ass while rebasing
 
