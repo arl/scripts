@@ -1,4 +1,0 @@
-#!/bin/bash
-set -e
-exec go tool pprof --alloc_space prof.mem
-
