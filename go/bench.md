@@ -37,7 +37,7 @@ benchcmp old new | benchviz > out.svg
 
 ## Inlining
 
-    go build -gcflags='-m -m' ... | grep 'function too complex
+    go build -gcflags='-m -m' ... | grep 'function too complex'
 
 ## Escape analysis
 
