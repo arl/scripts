@@ -5,7 +5,6 @@
 ## Usage: reset-mouse
 ## Options:
 ##   -h, --help    Display this message.
-##   -n            Dry-run; only show what would be done.
 ##
 
 usage() {
@@ -14,10 +13,14 @@ usage() {
   exit 2
 } 2>/dev/null
 
+die () {
+  echo "$@"
+  exit 1
+}
+
 main() {
   while [ $# -gt 0 ]; do
     case $1 in
-    (-n) DRY_RUN=1; break;;
     (-h|--help) usage 2>&1;;
     (--) shift; break;;
     (-*) usage "$1: unknown option";;
@@ -25,15 +28,11 @@ main() {
     esac
   done
 
-  if [ -n "$DRY_RUN" ]; then 
-    echo sudo modprobe -r psmouse
-    echo sudo modprobe psmouse
-  else 
-    sudo modprobe -r psmouse
-    echo psmouse kernel modules have been removed
-    sudo modprobe psmouse
-    echo psmouse kernel modules have been added
-  fi
+  sudo -v || die "nothing done"
+  sudo modprobe -r psmouse
+  echo psmouse kernel modules have been removed
+  sudo modprobe psmouse
+  echo psmouse kernel modules have been added
 }
 
 main "$@"
