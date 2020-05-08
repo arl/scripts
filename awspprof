@@ -1,0 +1,13 @@
+#!/bin/bash
+cat << EOF
+export CONTAINERID= # docker ps on the running instance
+export PORT=        # pprof port, printed in the first lines of baker log, look for {"level":"warning","msg":"running pprof server on [::]:44323","time":"2020-03-11T13:15:13Z"}). Here its 44323
+
+# immediately
+docker exec -it \$CONTAINERID curl http://localhost:\$PORT/debug/pprof/heap --output /mem.prof 
+docker cp \$CONTAINERID:/mem.prof mem.prof
+
+# take 30 second
+docker exec -it \$CONTAINERID curl http://localhost:\$PORT/debug/pprof/profile --output /cpu.prof 
+docker cp \$CONTAINERID:/cpu.prof cpu.prof
+EOF
