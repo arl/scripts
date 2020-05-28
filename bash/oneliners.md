@@ -2400,7 +2400,7 @@ split -C 10 largefile.txt
 ##### Create a large amount of dummy files (e.g 100000 files, 10 bytes each):
 ```bash
 #1. Create a big file
-dd if=/dev/zero of=bigfile bs=1 count=1000000
+fallocate -l 10G bigfile
 
 #2. Split the big file to 100000 10-bytes files
  split -b 10 -a 10 bigfile
