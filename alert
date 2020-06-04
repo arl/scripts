@@ -1,0 +1,49 @@
+#! /bin/bash
+## alert sends desktop notification
+##
+## Usage: alert MSG [--] [CMD]
+##   MSG is the notification text.
+##   CMD is the optional command to run before showing the notification,
+##    in which case alert shows an error notification if CMD failed.
+##
+## Options:
+##   -h, --help    Display this message.
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  if [ $# -lt 1 ]; then
+    usage
+  fi
+  MSG="${1}"
+  shift
+
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (--) shift; eval "$@"; RC=$?; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+
+  # List of freedesktop stock icons at:
+  # https://specifications.freedesktop.org/icon-naming-spec/latest/ar01s04.html
+  if [ -z "$RC" ]; then
+    ICON=dialog-information
+  elif [[ $RC -eq 0 ]]; then
+    MSG=$(echo -e "$MSG\t\t\"$*\"\t\tsuccess!")
+    ICON=face-cool
+  else
+    MSG=$(echo -e "$MSG\t\t\"$*\"\t\tfailure!")
+    ICON=face-angry
+  fi
+
+  notify-send --urgency=critical --icon $ICON "${MSG}"
+}
+
+main "$@"
