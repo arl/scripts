@@ -1,4 +1,4 @@
 #!/bin/sh
 aws ec2 describe-instances --instance-ids "$@" |
   jq '.Reservations[0].Instances[0]' |
-  jq '.LaunchTime, .Placement.AvailabilityZone, .InstanceType, .ImageId, .State.Name, .StateReason'
+  jq '.LaunchTime, .Placement.AvailabilityZone, .InstanceType, .ImageId, .State.Name, .StateReason, .NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicDnsName'
