@@ -80,8 +80,21 @@ You want to see the evolution of a range of lines through Git history
     git rebase --continue
 
 
-# Looks for all commits touching a particular file
+## Looks for all commits touching a particular file
 
     git log --follow -- filename
 
     Add --all across all branches
+
+## Cherry-pick multiple commits at once
+
+
+Cherry-pick all commits from A to B (excluding A):
+
+    git cherry-pick A^..B
+
+Cherry-pick all commits from A to B (including A):
+
+    git cherry-pick A^..B
+
+Note: in both examples A is the oldest commit.
