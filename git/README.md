@@ -82,9 +82,10 @@ You want to see the evolution of a range of lines through Git history
 
 ## Looks for all commits touching a particular file
 
-    git log --follow -- filename
+    git log --follow -- path
 
-    Add --all across all branches
+ - add `--all` across all branches
+ - add `--graph` to show history as a graph of commits.
 
 ## Cherry-pick multiple commits at once
 
@@ -98,3 +99,7 @@ Cherry-pick all commits from A to B (including A):
     git cherry-pick A^..B
 
 Note: in both examples A is the oldest commit.
+
+# List all commits in reflog touching a specific file
+
+    git rev-list --all -- foo.html | xargs git show --name-status --oneline
