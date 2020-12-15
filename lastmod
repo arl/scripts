@@ -1,4 +1,8 @@
 #!/bin/bash
 # Recursively look for the last n (default 1) modified files in a directory
+# (excluding .git)
 N=${1:-1}
-find . -type f -printf '%T@ %p\n' | sort -n | tail "-$N" | cut -f2- -d" "
+find -type f -not -path "./.git/*" -printf '%T@ %p\n' |\
+  sort -n |\
+  tail "-$N" |\
+  cut -f2- -d" "
