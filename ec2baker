@@ -1,0 +1,22 @@
+#! /bin/bash
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-n) shift; DRY_RUN=1;;
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  aws ec2 describe-instances  --filters Name=tag:team,Values=baker | jq ".Reservations[] | .Instances[] | select(.State.Code == 16) | {ImageId, InstanceId, InstanceType, LaunchTime, PublicDnsName, Tags}"
+}
+
+main "$@"
