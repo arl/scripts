@@ -16,7 +16,7 @@ main() {
     (*) break;;
     esac
   done
-  aws ec2 describe-instances  --filters Name=tag:team,Values=baker | jq ".Reservations[] | .Instances[] | select(.State.Code == 16) | {ImageId, InstanceId, InstanceType, LaunchTime, PublicDnsName, Tags}"
+  aws ec2 describe-instances --region us-west-2 --filters Name=tag:team,Values=baker | jq ".Reservations[] | .Instances[] | select(.State.Code == 16) | {ImageId, InstanceId, InstanceType, LaunchTime, PublicDnsName, Tags}"
 }
 
 main "$@"
