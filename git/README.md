@@ -103,3 +103,10 @@ Note: in both examples A is the oldest commit.
 # List all commits in reflog touching a specific file
 
     git rev-list --all -- foo.html | xargs git show --name-status --oneline
+
+# Sign off previous commits
+
+Perform an interactive rebase, and insert the following line after each picked
+commit to sign-off:
+
+    x git commit -S -s --amend --no-edit
