@@ -258,3 +258,10 @@
 | http://www.catonmat.net  -  good coders code, great reuse           |
 '---------------------------------------------------------------------'
 
+
+# Examples
+
+** Print the lines 120 to 140 from a file. Instructs `sed` to print the range of
+line and to exit at line 141:
+
+   sed -n '120,140p;141q' file
