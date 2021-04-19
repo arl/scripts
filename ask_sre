@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -eu
+
+REPO=$(git remote get-url origin)
+BRANCH=$(git branch --show-current)
+DIR=$(git rev-parse --show-prefix)
+
+echo "- Git repo     :"'`'"$REPO"'`'
+echo "- Git branch   :"'`'"$BRANCH"'`'
+echo "- terraform dir:"'`'"$DIR"'`'
