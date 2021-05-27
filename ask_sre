@@ -5,7 +5,11 @@ set -eu
 REPO=$(git remote get-url origin)
 BRANCH=$(git branch --show-current)
 DIR=$(git rev-parse --show-prefix)
+WS=$(terraform workspace show)
+VERSION=$(terraform version -json | jq -r '.terraform_version')
 
-echo "- Git repo     :"'`'"$REPO"'`'
-echo "- Git branch   :"'`'"$BRANCH"'`'
-echo "- terraform dir:"'`'"$DIR"'`'
+echo "- git repo    :"'`'"$REPO"'`'
+echo "- git branch  :"'`'"$BRANCH"'`'
+echo "- tf dir      :"'`'"$DIR"'`'
+echo "- tf version  :"'`'"$VERSION"'`'
+[ "$WS" != "default" ] && echo "- tf workspace :"'`'"$WS"'`'
