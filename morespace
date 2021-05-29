@@ -11,6 +11,8 @@
 ##   -h, --help    Display this message.
 ##   -f, --fat     Show the fattest debian packages, ordered by size.
 ##   -l, --linux   Show old linux headers/images.
+##   -g, --go      Show Go cache size.
+##   -d, --docker  Show Docker file system usage report.
 ##
 
 usage() {
@@ -33,7 +35,6 @@ _linux() {
 }
 
 linux() {
-
   if [[ $(_linux) ]]; then
     echo Unused linux headers/images:
     _linux
@@ -45,12 +46,24 @@ linux() {
   fi
 }
 
+docker_report() {
+  echo Docker system disk usage report:
+  docker system df
+}
+
+gocache() {
+  echo Go cache size $(go env GOCACHE):
+  du -sh $(go env GOCACHE)
+}
+
 main() {
   while [ $# -gt 0 ]; do
     case $1 in
     (-h|--help) usage 2>&1;;
     (-f|--fat) fat; exit;;
     (-l|--linux) linux; exit;;
+    (-d|--docker_report) docker_report; exit;;
+    (-g|--go) gocache; exit;;
     (--) shift; break;;
     (-*) usage "$1: unknown option";;
     (*) break;;
