@@ -1,0 +1,51 @@
+#! /bin/bash
+## awssh connects in ssh with an AWS EC2 instance ID
+## Usage: awssh [options] INSTANCE_ID
+## Options:
+##   -h, --help    Display this message.
+##   -n            Dry-run; only show what would be done.
+##   -r, --region  Specify region (defaults to us-west-2).
+##   -u, --user    SSH username (defaults to ec2-user).
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  AWS_REGION="us-west-2"
+  SSH_USER="ec2-user"
+
+  while [ $# -gt 0 ]; do
+    case $1 in
+    -h | --help) usage 2>&1 ;;
+    -r | --region)
+      shift
+      AWS_REGION=$1
+      shift
+      ;;
+    -u | --user)
+      shift
+      SSH_USER=$1
+      shift
+      break
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*) usage "$1: unknown option" ;;
+    *) break ;;
+    esac
+  done
+
+  PUBLIC_DNS=$(aws --region "${AWS_REGION}" ec2 describe-instances --instance-ids "$@" |
+    jq -r '.Reservations[0].Instances[0].NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicDnsName')
+
+  echo "ssh ${SSH_USER}@$PUBLIC_DNS"
+  ssh "${SSH_USER}@$PUBLIC_DNS"
+}
+
+main "$@"
