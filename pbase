@@ -1,0 +1,13 @@
+#! /bin/bash
+# usage: pbase Base Num1 [Num2 [NumN]]
+# print numbers in base N
+# accepts calculations instead of numbers since it uses bc under the hood.
+set -eu
+base=$1
+shift
+old="$IFS"
+IFS=';'
+nums="$*"
+IFS=$old
+
+echo "obase=$base;$nums" | bc
