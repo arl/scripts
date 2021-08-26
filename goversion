@@ -1,0 +1,88 @@
+#! /bin/bash
+## goversion manages installed go versions
+## Examples:
+##  - goversion download go1.17
+##  - goversion list
+##  - goversion select go1.17
+##
+## Options:
+##   -h, --help      Display this message.
+##   list            List installed go versions.
+##   select          selects a go version among the installed ones.
+##   download        downloads a new go version.
+##
+
+usage() {
+    [ "$*" ] && echo "$0: $*"
+    sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+    exit 2
+} 2>/dev/null
+
+safewhich() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+list() {
+    echo "Installed versions in $gobindir":
+    find "$gobindir" -type f -executable -regextype sed -regex ".*/go[0-9]\+\.[0-9]\+.*" |
+        while read -r line; do printf "\t - %s\n" "$(basename "$line")"; done
+}
+
+download() {
+    version="$1"
+    echo "Downloading $version..."
+    go get "golang.org/dl/$version"
+    "$version" download
+}
+
+vselect() {
+    version="$1"
+    [ -x "$gobindir/$version" ] || die "$gobindir/$version not found."
+    [ -L "$gobindir/go" ] || die "refusing to overwrite $gobindir/go it's not a symbolic link."
+    pushd "$gobindir" >/dev/null || die "pushd $gobindir failed"
+    ln -fs "$version" go
+    popd >/dev/null || die "popd failed"
+    echo "success $(command -v go) is now $(go version)"
+}
+
+die() {
+    printf "Error, %s\n" "$(echo -ne "$@")"
+    exit 1
+}
+
+main() {
+    while [ $# -gt 0 ]; do
+        case $1 in
+        list)
+            shift
+            list
+            ;;
+        download)
+            shift
+            [ $# -ge 1 ] || die "missing go version. Example:\t""$(basename "$0") download go1.17"
+            download "$1"
+            exit 0
+            ;;
+        select)
+            shift
+            [ $# -ge 1 ] || die "missing go version. Example:\t""$(basename "$0") select go1.17"
+            vselect "$1"
+            exit 0
+            ;;
+        -h | --help) usage 2>&1 ;;
+        --)
+            shift
+            break
+            ;;
+        -*) usage "$1: unknown option" ;;
+        *) break ;;
+        esac
+    done
+
+}
+
+safewhich go || die "go binary not found"
+gobindir="$(go env GOPATH)/bin"
+readonly gobindir
+
+main "$@"
