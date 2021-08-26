@@ -1,9 +1,8 @@
 #! /bin/bash
-## myscript does this and that...
-## Usage: myscript [options] ARG1
+## calc does simple computations
+## Example: calc 20+22/14
 ## Options:
 ##   -h, --help    Display this message.
-##   -n            Dry-run; only show what would be done.
 ##
 
 usage() {
@@ -15,7 +14,6 @@ usage() {
 main() {
   while [ $# -gt 0 ]; do
     case $1 in
-    (-n) shift; DRY_RUN=1;;
     (-h|--help) usage 2>&1;;
     (--) shift; break;;
     (-*) usage "$1: unknown option";;
