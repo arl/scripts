@@ -1,0 +1,5 @@
+#!/bin/sh
+
+FMT='\ntotal number of CPU seconds %Us | %Ss (user | kernel)\nwall-clock (real) %es\nresident %Mkb | %tkb (max | average)\n%C\n'
+
+/usr/bin/time -f "${FMT}" "${@}"
