@@ -72,7 +72,7 @@ main() {
   if ! [ -t 1 ]; then
     # script stdout is connected, clipboard content will be piped into whatever
     # it is connected to
-    xclip -o
+    xclip -o -sel cli
     # 
     echo -n "\ncb: system clipboard content has been pasted" >&2
     exit 0
