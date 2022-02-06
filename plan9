@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Attach to a tmux session called plan9. If it doesn't exist, create it.
+# Switch to it if we're already inside tmux.
+
+if ! tmux has-session -t plan9
+then
+  tmux new-session -s plan9 -n fontsrv -d 'fontsrv -m /mnt/fonts'
+fi
+
+if [ -n "${TMUX}" ]
+  then
+    tmux -u switch-client -t plan9
+  else
+    tmux -u attach-session -t plan9
+fi
