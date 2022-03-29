@@ -3,6 +3,6 @@
 # (excluding .git)
 N=${1:-1}
 find -type f -not -path "./.git/*" -printf '%T@ %p\n' |\
-  sort -n |\
-  tail "-$N" |\
+  sort -rn |\
+  head "-$N" |\
   cut -f2- -d" "
