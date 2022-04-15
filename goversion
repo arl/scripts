@@ -9,14 +9,14 @@
 ## Options:
 ##   -h, --help      Display this message.
 ##   list            List installed go versions.
-##   select          selects a go version among the installed ones.
-##   download        downloads a new go version.
+##   select          Select a go version among the installed ones.
+##   download        Download a new go version.
 ##
 
 set -eu
 
 usage() {
-    [ "$*" ] && echo -e "$(basename $0): $*\n"
+    [ "$*" ] && echo -e "$(basename "$0"): $*\n"
     sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
     exit 2
 } 2>/dev/null
@@ -26,13 +26,23 @@ safewhich() {
 }
 
 list() {
-    find "$gobindir" -type f -executable -regextype posix-extended -regex "${goregex}" |
+    readonly current=$(show)
+    readonly goregex=".*/go((dev)|(tip)|(1.[0-9]+.*))$"
+    find "$gobindir" -follow -type f -executable \
+        -regextype posix-extended \
+        -regex "${goregex}" |
     sort |
-        while read -r line; do basename "$line"; done
+        while read -r line; do
+            ver=$(basename "$line")
+            if [ "$ver" == "$current" ]; then
+                echo "${ver} <=="
+            fi
+            echo "$ver"
+        done
 }
 
 show() {
-    basename $(readlink -e "$gobindir/go")
+    basename "$(readlink -e "$gobindir/go")"
 }
 
 download() {
@@ -63,13 +73,13 @@ main() {
         list) shift; list ; exit 0;;
         download)
             shift
-            [ $# -ge 1 ] || die "'$(basename $0) download' needs an argument."
+            [ $# -ge 1 ] || die "'$(basename "$0") download' needs an argument."
             download "$1" ; exit 0
             exit 0
             ;;
         select)
             shift
-            [ $# -ge 1 ] || die "'$(basename $0) select' needs an argument."
+            [ $# -ge 1 ] || die "'$(basename "$0") select' needs an argument."
             vselect "$1" ; exit 0
             ;;
         -h | --help) usage 2>&1 ;;
@@ -80,9 +90,6 @@ main() {
 }
 
 safewhich go || die "go binary not found"
-gobindir="$(go env GOPATH)/bin"
-readonly gobindir
-goregex=".*/go((tip)|(1.[0-9]+.*))$"
-readonly goregex
+readonly gobindir="$(go env GOPATH)/bin"
 
 main "$@"
