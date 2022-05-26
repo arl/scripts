@@ -1,0 +1,31 @@
+#! /bin/bash
+## Start nats-server docker container
+## Usage: nats-server [options]
+## Options:
+##   -h, --help    Display this message.
+##   -d, --dbg     Run in debug mode (print all messages)
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  NATS_OPTIONS=""
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-n) shift; DRY_RUN=1;;
+    (-h|--help) usage 2>&1;;
+    (-d|--dbg) NATS_OPTIONS="-DV"; break;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  docker container stop nats-main > /dev/null 2>&1 && echo 'Restarting container'
+  docker run -d --rm --name nats-main -p 4222:4222 -p 6222:6222 -p 8222:8222 nats $NATS_OPTIONS
+}
+
+main "$@"
