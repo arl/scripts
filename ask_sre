@@ -8,8 +8,8 @@ DIR=$(git rev-parse --show-prefix)
 WS=$(terraform workspace show)
 VERSION=$(terraform version -json | jq -r '.terraform_version')
 
-echo "- git repo    :"'`'"$REPO"'`'
-echo "- git branch  :"'`'"$BRANCH"'`'
-echo "- tf dir      :"'`'"$DIR"'`'
-echo "- tf version  :"'`'"$VERSION"'`'
+echo "- git repository      :"'`'"$REPO"'`'
+echo "- git branch          :"'`'"$BRANCH"'`'
+echo "- terraformf dir      :"'`'"$DIR"'`'
+echo "- terraformf version  :"'`'"$VERSION"'`'
 [ "$WS" != "default" ] && echo "- tf workspace :"'`'"$WS"'`'
