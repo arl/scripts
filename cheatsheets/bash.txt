@@ -1,0 +1,27 @@
+.-----------------------------------------------------------------------.
+|                                                                       |
+|                              Bash Cheat Sheet                          |
+|                                                                       |
+'-----------------------------------------------------------------------'
+
+
+ ============================== Keybindings =============================
+
+
+CTRL + _ (undo)
+CTRL + t (swap two characters)
+ALT + t (swap two words)
+ALT + . (prints last argument from previous command)
+CTRL + x + * (expand glob/star)
+CTRL + arrow (move forward a word)
+ALT + f (move forward a word)
+ALT + b (move backward a word)
+CTRL + x followed by CTRL + e (opens the command string in an editor so that you can edit it before execution)
+CTRL + e (move cursor to end)
+CTRL + a (move cursor to start)
+CTRL + xx (move to the opposite end of the line)
+CTRL + u (cuts everything before the cursor)
+CTRL + k (cuts everything after the cursor)
+CTRL + y (pastes from the buffer)
+CTRL + l (lowercase L, clears screen)
+

@@ -19,6 +19,7 @@ function print_usage()
 	echo -e "\t\ted\tfor ed commands cheat sheet"
 	echo -e "\t\tvim\tfor vim command cheat sheet for programmers"
 	echo -e "\t\tscreen\tfor screen cheat sheet"
+	echo -e "\t\tbash\tfor bash cheat sheet"
 	exit $exit_code
 }
 
@@ -38,10 +39,11 @@ cmdname=$1
 
 case $cmdname in
 	awk)	cheatfile="${cheatsheets}/awk.cheat.sheet.txt" ;;
-	ed)		cheatfile="${cheatsheets}/ed.unix.text.editor.cheat.sheet.txt" ;;
+	ed)	cheatfile="${cheatsheets}/ed.unix.text.editor.cheat.sheet.txt" ;;
 	sed)	cheatfile="${cheatsheets}/sed.stream.editor.cheat.sheet.txt" ;;
 	screen)	cheatfile="${cheatsheets}/screen.cheat.sheet.txt" ;;
 	vi|vim)	cheatfile="${cheatsheets}/vim-for-programmers.cheat.sheet.txt" ;;
+	bash)	cheatfile="${cheatsheets}/bash.txt" ;;
 	*)		echo "no cheat sheet found for $cmdname"
 			exit 3
 			;;
