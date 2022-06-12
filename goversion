@@ -7,10 +7,11 @@
 ##  - goversion show
 ##
 ## Options:
-##   -h, --help      Display this message.
-##   list            List installed go versions.
-##   select          Select a go version among the installed ones.
-##   download        Download a new go version.
+##   -h, --help         Display this message.
+##   show               Show current version.
+##   list               List installed go versions.
+##   use/select         Select a go version among the installed ones.
+##   install/download   Download a new go version.
 ##
 
 set -eu
@@ -35,9 +36,10 @@ list() {
         while read -r line; do
             ver=$(basename "$line")
             if [ "$ver" == "$current" ]; then
-                echo "${ver} <=="
+                echo "${ver} <--"
+            else
+                echo "$ver"
             fi
-            echo "$ver"
         done
 }
 
@@ -71,13 +73,13 @@ main() {
         case $1 in
         show) shift; show ; exit 0;;
         list) shift; list ; exit 0;;
-        download)
+        install|download)
             shift
             [ $# -ge 1 ] || die "'$(basename "$0") download' needs an argument."
             download "$1" ; exit 0
             exit 0
             ;;
-        select)
+        use|select)
             shift
             [ $# -ge 1 ] || die "'$(basename "$0") select' needs an argument."
             vselect "$1" ; exit 0
