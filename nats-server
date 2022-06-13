@@ -25,7 +25,7 @@ main() {
     esac
   done
   docker container stop nats-main > /dev/null 2>&1 && echo 'Restarting container'
-  docker run -d --rm --name nats-main -p 4222:4222 -p 6222:6222 -p 8222:8222 nats $NATS_OPTIONS
+  docker run -d --rm --name nats-main -p 4222:4222 -p 6222:6222 -p 8222:8222 -p 8223:8223 nats -m 8223 $NATS_OPTIONS
 }
 
 main "$@"
