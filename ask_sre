@@ -1,15 +1,19 @@
 #!/bin/bash
-
 set -eu
 
-REPO=$(git remote get-url origin)
-BRANCH=$(git branch --show-current)
-DIR=$(git rev-parse --show-prefix)
-WS=$(terraform workspace show)
-VERSION=$(terraform version -json | jq -r '.terraform_version')
+add_section() {
+    printf " - *%s*\n" "${1}"
+}
 
-echo "- git repository      :"'`'"$REPO"'`'
-echo "- git branch          :"'`'"$BRANCH"'`'
-echo "- terraformf dir      :"'`'"$DIR"'`'
-echo "- terraformf version  :"'`'"$VERSION"'`'
-[ "$WS" != "default" ] && echo "- tf workspace :"'`'"$WS"'`'
+add_line() {
+    printf "     - %-25s \x60%s\x60\n" "${1}" "${2}"
+}
+
+add_section "git"
+add_line "repository" "$(git remote get-url origin)"
+add_line "branch" "$(git branch --show-current)"
+
+add_section "terraform"
+add_line "state directory" "$(git rev-parse --show-prefix)"
+add_line "workspace to use" "$(terraform workspace show)"
+add_line "version" "$(terraform version | head -n1)"
