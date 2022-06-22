@@ -1,1 +1,1 @@
-This is my collection of bash scripts for everyday use<br>
+This directory contains my collection of bash scripts for everyday use, as well as a knowledge base, in markdown format, of linux stuff.
