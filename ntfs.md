@@ -1,7 +1,8 @@
-# Read-only NTFS-formatted disk
+# NTFS
+## Read-only NTFS-formatted disk
 
-Some kernel logs:
-
+If a ntfs disk  is mounted in read-only.
+Example kernel logs:
 ```
 Jul 14 00:39:13 thinkpad kernel: ntfs: driver 2.1.32 [Flags: R/W MODULE].
 Jul 14 00:39:13 thinkpad kernel: ntfs: volume version 3.1.
