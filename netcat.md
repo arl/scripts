@@ -1,3 +1,6 @@
-# Listen UDP on port 8125
+# Netcat
+Command name is `netcat` or `nc`
 
-    nc -ulp 8125
+## Listen UDP on port 8125
+
+    netcat -ulp 8125

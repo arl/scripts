@@ -1,10 +1,12 @@
-# Show current http connections (with a specific host or no)
+# TCP
+## Show current http connections
 
+With [netcat](netcat.md)
 ```
 netstat | grep http | grep 77.95.143.196
 ```
 
-# Redirect any TCP port to port 80
+## Redirect any TCP port to port 80
 
 This has to be the easiest way to install a redirection from port 80 to any
 other local port. This is so useful for development.
@@ -13,7 +15,7 @@ other local port. This is so useful for development.
 socat TCP-LISTEN:80,fork TCP:127.0.0.1:7070
 ```
 
-# tcpdump
+## tcpdump
 
 Dump http traffic to and from MYHOST, on port 80:
  - `i` interface
@@ -25,7 +27,7 @@ Dump http traffic to and from MYHOST, on port 80:
 tcpdump -i wlp58s0 -s 65535 -w output.pcap 'host MYHOST and (tcp port 80)'
 ```
 
-# IpTables
+## IpTables
 
 Add an IpTables rule that reject every TCP packet to 127.0.0.1:40000:
 
@@ -36,6 +38,6 @@ Remove the previous rule (note the `-D` instead of `-A`):
     sudo iptables -D INPUT -d 127.0.0.1 -p tcp --dport 40000 -j REJECT
 
 
-# Show which process is using a specific port
+## Show which process is using a specific port
 
     sudo ss -lptn 'sport = :80'
