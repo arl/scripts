@@ -1,8 +1,14 @@
 # Yaourt tips
 
+
 ## Maintenance
 
-To update an AUR (yaourt) installed package, you have to use the following.
+Synchronize and update packages, with AUR support:
+
+	yaourt -Syuua --noconfirm
+
+
+To update an AUR (yaourt) installed package, you have to use the following:
 
     yaourt -Syua
 
