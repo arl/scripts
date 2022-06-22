@@ -1,5 +1,5 @@
-# tmux tips
+# Tmux
 
-## write on all panes at once
+## Write on all panes of the same windos at once
 
     setw synchronize-panes on

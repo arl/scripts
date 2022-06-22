@@ -1,3 +1,5 @@
-# Use a separator specific in hexadecimal
+# Cut
 
-    cut -d $'\x13'
+## Specify the separator in hexadecimal
+
+    cut -d $'\x1e'
