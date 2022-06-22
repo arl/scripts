@@ -1,4 +1,6 @@
-# watchpoints
+# GDB
+
+## Watchpoints
 
 Check they are supported with:
 
@@ -19,7 +21,7 @@ Hardware read watchpoint 2: *0xfeedface
 Use clear to remove a watchpoint (as breakpoints)
 
 
-# expressions
+## Expressions
 
 To make gdb print a value after each step:
 
@@ -28,14 +30,14 @@ gdb$ display mystruct.myval
 ```
 
 
-# lock thread while stepping
+## Lock thread while stepping
 
 ```
 set scheduler-locking step
 ```
 
 
-# debug program reading stdin
+## Debug program reading stdin
 
 ```sh
 gdb /path/to/binary

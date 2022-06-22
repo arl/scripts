@@ -1,7 +1,7 @@
-# GCC tips
+# GCC
 
 ## Show default include paths
 
 ```
-echo | gcc -E -Wp,-v -
+    gcc -E -Wp,-v -
 ```
