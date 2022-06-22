@@ -1,34 +1,43 @@
 # Makefile tips
 
-## create targets at runtime by iterating over a list
+## Create targets at runtime by iterating over a list
 
-    LIST = 0 1 2 3 4 5
-    define make-my-target
-    my$1:
-        sh my_script$1.sh
-    mys:: my$1
-    endef
+```make
+LIST = 0 1 2 3 4 5
+define make-foo-target
+foo$1:
+	@echo "running target foo$1"
+all:: foo$1
+endef
 
-    $(foreach element,$(LIST),$(eval $(call make-my-target,$(element))))
+$(foreach element,$(LIST),$(eval $(call make-foo-target,$(element))))
+```
 
-## automatic help with annotations
+## Automatic help with annotations
 
 Comment targets with `##`:
 
-    build: ## build your mess
-      @echo "building..."
+```make
+build: ## build some stuff
+	@echo "building..."
 
-    clean: ## clean your mess
-      rm -rf build
+clean: ## clean your mess
+	rm -rf build
+```
 
-'Annotations' are automatically parsed and presented with the following `help`
-target:
+Target comments/annotations are automatically parsed and presented with the following `help` target:
 
-    help:
-      @grep -E '^[a-zA-Z_-.]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+```make
 
-Example:
+help:
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n\033[36m\033[0m\n"} /^[$$()% 0-9a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+.PHONY: help
+```
+
+Result:
+```
     $ make help
-    build                          build your mess
+    build                          build some stuff
     clean                          clean your mess
+```
