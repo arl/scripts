@@ -14,6 +14,6 @@ add_line "repository" "$(git remote get-url origin)"
 add_line "branch" "$(git branch --show-current)"
 
 add_section "terraform"
-add_line "state directory" "$(git rev-parse --show-prefix)"
-add_line "workspace to use" "$(terraform workspace show)"
+add_line "directory" "$(git rev-parse --show-prefix)"
+add_line "workspace" "$(terraform workspace show)"
 add_line "version" "$(terraform version | head -n1)"
