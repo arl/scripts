@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# Update snap-store, in order to resolve the "Pending update of snap-store"
+# nagging notification.
+#
+# from https://askubuntu.com/questions/1412575/pending-update-of-snap-store
+set -eu
+
+snap-store --quit
+sudo snap refresh
