@@ -35,3 +35,11 @@ machine R, and the command will be sent to R.
 ```bash
 scp -P 1234 <user at R>@127.0.0.1:/path/to/file [destfile]
 ```
+
+
+## Passwordless SSH
+
+```sh
+cat ~/.ssh/id_rsa.pub | ssh remote_username@server_ip_address \
+  "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+```
