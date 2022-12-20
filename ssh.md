@@ -39,7 +39,14 @@ scp -P 1234 <user at R>@127.0.0.1:/path/to/file [destfile]
 
 ## Passwordless SSH
 
+
+With ssh-copy-id:
+
+  ssh-copy-id -i  ~/.ssh/id_rsa.pub user@host
+
+
+Without:
 ```sh
-cat ~/.ssh/id_rsa.pub | ssh remote_username@server_ip_address \
+cat ~/.ssh/id_rsa.pub | ssh user@host \
   "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
