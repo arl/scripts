@@ -1,3 +1,18 @@
-# POST
+# Curl
 
-curl -d "@data.json" -X POST http://localhost:3000/data
+## POST data from string
+
+curl -d "data.json" -X POST [URL]
+
+
+## POST data from file
+
+curl -d "@data.json" -X POST [URL]
+
+
+## Send Headers
+
+curl [URL]
+   -H "Content-Type: application/json"
+   -H "Accept: application/json"
+   -d "[json data]"
