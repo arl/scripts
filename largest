@@ -1,0 +1,32 @@
+#! /bin/bash
+## largest prints the Nth largest directories
+## Usage: largest [N] [DIR]
+## Options:
+##   -h, --help    Display this message.
+##   -n            Dry-run; only show what would be done.
+##
+## N defaults to 5 and DIR to current directory.
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
+main() {
+  N="${1:-5}"
+  DIR="${2:-$PWD}"
+
+  while [ $# -gt 0 ]; do
+    case $1 in
+    (-h|--help) usage 2>&1;;
+    (--) shift; break;;
+    (-*) usage "$1: unknown option";;
+    (*) break;;
+    esac
+  done
+  # from https://www.tecmint.com/find-top-large-directories-and-files-sizes-in-linux/
+  du -Sh "$DIR" | sort -rh | head -n "$N"
+}
+
+main "$@"
