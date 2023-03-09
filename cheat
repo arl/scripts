@@ -1,12 +1,12 @@
 #! /bin/bash
 
-cheatsheets="$(dirname $(realpath $0))/cheatsheets"
+cheatsheets="$(dirname "$(realpath "$0")")/cheatsheets"
 
 function print_usage()
 {
 	exit_code=${1:-0}
 	user_msg=${2:-''}
-	if [ -n $user_msg ]; then
+	if [ -n "$user_msg" ]; then
 		echo "cheat : no arguments given..."
 		echo
 	fi
@@ -20,7 +20,8 @@ function print_usage()
 	echo -e "\t\tvim\tfor vim command cheat sheet for programmers"
 	echo -e "\t\tscreen\tfor screen cheat sheet"
 	echo -e "\t\tbash\tfor bash cheat sheet"
-	exit $exit_code
+	echo -e "\t\tmake\tfor GNU make cheat sheet"
+	exit "$exit_code"
 }
 
 if [ $# -lt 1 ]; then
@@ -31,7 +32,7 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
 fi
 
 if [ ! -d "${cheatsheets}" ]; then
-    echo cheatsheets directory "'"$cheapath"'" does NOT exist
+    echo "cheatsheets directory '$cheatsheets' does NOT exist"
     exit 1
 fi
 
@@ -44,9 +45,19 @@ case $cmdname in
 	screen)	cheatfile="${cheatsheets}/screen.cheat.sheet.txt" ;;
 	vi|vim)	cheatfile="${cheatsheets}/vim-for-programmers.cheat.sheet.txt" ;;
 	bash)	cheatfile="${cheatsheets}/bash.txt" ;;
+	make)	cheatfile="${cheatsheets}/make.md" ;;
 	*)		echo "no cheat sheet found for $cmdname"
 			exit 3
 			;;
 esac
 
-less -f $cheatfile
+function safewhich ()
+{
+	command -v "$1" > /dev/null 2>&1
+}
+
+if safewhich glow && [[ $cheatfile == *.md ]]; then
+	glow -p -s dark "$cheatfile"
+else
+	less -f "$cheatfile"
+fi
