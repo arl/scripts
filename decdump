@@ -1,0 +1,3 @@
+#!/bin/sh
+# Like hexdump -C but prints each byte in decimal instead
+hexdump -e'"%07.8_ad  " 8/1 "%03d " "  " 8/1 "%03d " "  |"' -e'16/1  "%_p"  "|\n"' -v
