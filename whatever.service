@@ -1,0 +1,41 @@
+# Minimal systemd service file
+#
+# From https://gist.github.com/ryankurte/4f00605ced06613b3b1354d08d25ec5f
+#
+# To use:
+# - place in /etc/systemd/system/whatever.service
+# - install with `systemd install whatever.service`
+#
+# Note that if you change this file you will need to run `systemctl
+# daemon-reload` to get systemd to notice.
+
+[Unit]
+Description=A good service description
+
+# After networking because we need that
+After=network.target
+
+[Service]
+
+# Simple services don't do any forking / background nonsence
+Type=simple
+
+# User with which to run the service
+User=pi
+
+# Any setup we need to do, specifying the shell because otherwise who knows what's up
+ExecStartPre=/bin/bash -c 'echo "hello world"'
+
+# Set the working directory for the application
+WorkingDirectory=/my_app/
+
+# Command to run the application
+ExecStart=/my_app/my_app.bin
+
+# Restart policy, only on failure
+Restart=on-failure
+
+[Install]
+# Start the service before we get to multi-user mode
+WantedBy=multi-user.target
+
