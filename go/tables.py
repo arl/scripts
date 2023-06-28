@@ -1,9 +1,10 @@
-#! /usr/bin/env python2.7
+#! /usr/bin/env python3
+#
+# Generate Go arrays representing degrees to sine, and degrees to cosine lookup tables.
 
 import sys
 import math
 import itertools
-
 
 def grouper(n, iterable):
     it = iter(iterable)
@@ -13,17 +14,19 @@ def grouper(n, iterable):
            return
        yield chunk
 
-it = xrange(0, 360)
-print "var CosTable = []float32{"
+it = range(0, 360)
+print("var CosTable = [360]float32{")
 for vals in grouper(5, it):
+    print('\t', end='')
     for val in vals:
-        print math.cos(math.radians(val)), ",",
-    print
-print "}"
-print 
-print "var SinTable = []float32{"
+        print("{},".format(math.cos(math.radians(val))), end='')
+    print()
+print("}")
+print()
+print("var SinTable = [360]float32{")
 for vals in grouper(5, it):
+    print('\t', end='')
     for val in vals:
-        print math.sin(math.radians(val)), ",",
-    print
-print "}"
+        print("{},".format(math.sin(math.radians(val))), end='')
+    print()
+print("}")
