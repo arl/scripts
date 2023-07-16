@@ -35,8 +35,10 @@ def main():
         matching_episodes = []
         movie_re = f".*S{matches.group(1)}E{matches.group(2)}.*\.{movie_ext}$"
         for fname in file_list:
-            if re.match(movie_re, fname):            
-                matching_episodes.append((file_name, fname[:-3] + "srt"))
+            if re.match(movie_re, fname):
+                new_name = fname[:-3] + "srt"
+                new_name = new_name.replace("'", r"'\''")
+                matching_episodes.append((file_name, new_name))
 
         if len(matching_episodes) == 0:
             print(f"can't find movie matching {file_name}")
