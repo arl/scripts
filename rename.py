@@ -38,7 +38,7 @@ def main():
             if re.match(movie_re, fname):
                 new_name = fname[:-3] + "srt"
                 new_name = new_name.replace("'", r"'\''")
-                matching_episodes.append((file_name, new_name))
+                matching_episodes.append((fname, file_name, new_name))
 
         if len(matching_episodes) == 0:
             print(f"can't find movie matching {file_name}")
@@ -51,11 +51,15 @@ def main():
 
     if dry_run:
         for pair in file_pairs:
-            print(f"\"{pair[0]}\" -> \"{pair[1]}\"")
+            print(f"\"{pair[1]}\" -> \"{pair[2]}\"")
     else:
         print('#!/bin/bash')
         for pair in file_pairs:
-            print(f"mv '{pair[0]}' '{pair[1]}'")
+            print(f"mv '{pair[1]}' '{pair[2]}'")
+            if movie_ext == "mkv":
+                # found in mkvtoolnix package (sudo apt install mkvtoolnix)
+                new_title = pair[0][:-4]
+                print(f"mkvpropedit '{pair[0]}' -s 'title={new_title}'")
 
 
 if __name__ == "__main__":
