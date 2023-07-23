@@ -5,7 +5,7 @@ import re
 import sys
 
 movie_ext = "mkv"
-srt_re = r'S(\d{2})E(\d{2})'
+srt_re = r'E(\d{2})'
 
 def main():
     dry_run = True
@@ -33,11 +33,10 @@ def main():
 
         # check matching movies
         matching_episodes = []
-        movie_re = f".*S{matches.group(1)}E{matches.group(2)}.*\.{movie_ext}$"
+        movie_re = f".*E{matches.group(1)}.*\.{movie_ext}$"
         for fname in file_list:
             if re.match(movie_re, fname):
                 new_name = fname[:-3] + "srt"
-                new_name = new_name.replace("'", r"'\''")
                 matching_episodes.append((fname, file_name, new_name))
 
         if len(matching_episodes) == 0:
@@ -55,11 +54,11 @@ def main():
     else:
         print('#!/bin/bash')
         for pair in file_pairs:
-            print(f"mv '{pair[1]}' '{pair[2]}'")
+            print(f"mv \"{pair[1]}\" \"{pair[2]}\"")
             if movie_ext == "mkv":
                 # found in mkvtoolnix package (sudo apt install mkvtoolnix)
                 new_title = pair[0][:-4]
-                print(f"mkvpropedit '{pair[0]}' -s 'title={new_title}'")
+                print(f"mkvpropedit \"{pair[0]}\" -s title=\"{new_title}\"")
 
 
 if __name__ == "__main__":
