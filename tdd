@@ -33,7 +33,7 @@ compare() {
     echo -n .
   fi
 }
-#trap build SIGINT
+trap build SIGINT
 trap exit SIGQUIT
 
 echo -e  "--> Press Ctrl+C to force build, Ctrl+\\ to exit."
