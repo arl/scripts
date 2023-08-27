@@ -5,7 +5,7 @@ import re
 import sys
 
 movie_ext = "mkv"
-srt_re = r'E(\d{2})'
+srt_re = r'[Ee](\d{2})'
 
 def main():
     dry_run = True
@@ -33,7 +33,7 @@ def main():
 
         # check matching movies
         matching_episodes = []
-        movie_re = f".*E{matches.group(1)}.*\.{movie_ext}$"
+        movie_re = f".*[Ee]{matches.group(1)}.*\.{movie_ext}$"
         for fname in file_list:
             if re.match(movie_re, fname):
                 new_name = fname[:-3] + "srt"
