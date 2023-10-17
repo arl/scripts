@@ -1,0 +1,3 @@
+#!/bin/sh
+# Convert stringhified json to valid json
+sed 's/\\\"/\"/g' | sed 's/\"{/{/g' | sed 's/}\"}/}}/g'
