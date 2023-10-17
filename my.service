@@ -3,8 +3,8 @@
 # From https://gist.github.com/ryankurte/4f00605ced06613b3b1354d08d25ec5f
 #
 # To use:
-# - place in /etc/systemd/system/whatever.service
-# - install with `systemd install whatever.service`
+# - place in /etc/systemd/system/my.service
+# - install with `systemd install my.service`
 #
 # Note that if you change this file you will need to run `systemctl
 # daemon-reload` to get systemd to notice.
