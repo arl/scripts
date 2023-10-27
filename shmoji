@@ -1,0 +1,82 @@
+#!/bin/sh
+#
+# shell-based emoji picker
+#
+# deps by command:
+# - shmoji download: curl
+# - shmoji fzf: fzf
+# - shmoji bemenu: bemenu & wtype
+# - shmoji dmenu: dmenu-wl
+# - shmoji rofi: rofi & xdotool
+# - shmoji rofi: wofi & wl-copy
+
+set -e
+
+cmd="$1"
+emojidir="$HOME/.cache/shmoji"
+emojifile="$emojidir/emojis.txt"
+
+die() {
+    printf "%s\n" "$1"
+    exit 1
+}
+
+depends() {
+    for dep in "$@"; do
+        command -v "$dep" > /dev/null || die "$dep not found"
+    done
+}
+
+emojicheck() {
+    [ -f "$emojifile" ] || die "emojis not found. try 'shmoji download'"
+}
+
+emojiprint() {
+    printf "%s" "$1" | cut -d " " -f 1 | tr -d '\n'
+}
+
+case "$cmd" in
+    download)
+        depends curl
+        mkdir -p "$emojidir"
+        # $ wc -l /var/www/trash.j3s.sh/emojis.txt 
+        # 3570 /var/www/trash.j3s.sh/emojis.txt
+        curl 'https://trash.j3s.sh/emojis.txt' >"$emojifile"
+        ;;
+    bemenu)
+        emojicheck
+        depends bemenu wtype
+        emoji=$(cat "$emojifile" | bemenu -c -W 0.2 -l 20)
+        emojiprint "$emoji" | wtype -
+        ;;
+    dmenu)
+        emojicheck
+        depends dmenu-wl
+        emoji=$(cat "$emojifile" | dmenu-wl)
+        emojiprint "$emoji"
+        ;;
+    rofi)
+        emojicheck
+        depends rofi xdotool
+        win=$(xdotool getactivewindow)
+        emoji=$(cat "$emojifile" | rofi -dmenu | cut -d " " -f 1 | tr -d '\n')
+        [ "$emoji" ] && xdotool windowactivate --sync $win type --clearmodifiers $emoji
+        ;;
+    wofi)
+      emojicheck
+      depends wofi wl-copy
+      emoji=$(cat "$emojifile" | wofi -dS dmenu | cut -d " " -f 1 | tr -d '\n')
+      [ "$emoji" ] && wl-copy $emoji
+      ;;
+    fzf)
+        emojicheck
+        depends fzf
+        emoji=$(cat "$emojifile" | fzf)
+        emojiprint "$emoji"
+        ;;
+    *)
+        printf "%s\n" "usage: shmoji [download | bemenu | dmenu | rofi | wofi | fzf]"
+        ;;
+esac
+
+exit 0
