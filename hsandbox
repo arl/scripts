@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 """
 The Hacking Sandbox - hsandbox
 
@@ -340,6 +340,7 @@ def screen(hacking, argv, vertical):
     argv[0] = os.path.abspath(argv[0])
     workdir = tempfile.mkdtemp(prefix="hsandbox-")
     try:
+        print(workdir)
         os.chdir(workdir)
         try:
             hsandbox = " ".join(argv)
@@ -369,7 +370,7 @@ def screen(hacking, argv, vertical):
         "Yeah, it was pretty cool, actually.",
         ])
 
-    print message
+    print(message)
 
 
 def editor(hacking):
@@ -384,7 +385,7 @@ def editor(hacking):
         if cmd_args:
             cmd += " " + cmd_args
     open(".hsandbox-editor-running", "w").close()
-    os.system("nvim %s" % (hacking.filename))
+    os.system("%s %s" % (cmd, hacking.filename))
     shutil.copy(hacking.filename, os.path.join(HSANDBOX_DIR, hacking.filename))
     os.unlink(".hsandbox-editor-running")
 
@@ -432,13 +433,13 @@ def busy_runner(hacking, version):
 def describe_languages():
     languages = LANGUAGES.items()
     descriptions = [(tag, hacking.get_label()) for (tag, hacking) in languages]
-    descriptions.sort(key=lambda (tag, label): tag)
+    descriptions.sort(key=lambda descr: descr[0]) # sort by tag
 
     max_tag_length = max(len(tag) for (tag, label) in descriptions)
 
     def format_line(tag, label):
         return "  %-*s - %s" % (max_tag_length, tag, label)
-        
+
     lines = [format_line(tag, label) for (tag, label) in descriptions]
     return "\n".join(lines)
 
@@ -518,6 +519,6 @@ if __name__ == "__main__":
         main(sys.argv)
     except KeyboardInterrupt:
         sys.exit("Interrupted")
-    except Error, e:
+    except Error as e:
         sys.exit("error: %s" % e)
 
