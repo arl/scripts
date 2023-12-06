@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Function to convert stdin to a Go formatted byte slice
+printbytes() {
+    echo -n " _ = []byte{"
+    while IFS= read -r -n1 char; do
+        if [[ -n $char ]]; then
+            printf "0x%02x, " "'$char"
+        fi
+    done
+    echo "}"
+}
+
+# Call the function with stdin
+printbytes
