@@ -1,13 +1,19 @@
 #!/bin/sh
 # Prints current battery percentage and an unicode symbol indicating
 # whether it's over 20% (🔋 or 🪫).
+# If the battery is not currently discharging (i.e. it's plugged) a
+# 🔌 is shown.
 # Can be used for a tmux status bar for example.
 
-VAL=$(cat /sys/class/power_supply/BAT0/capacity)
-LOW='🪫'
-HIGH='🔋'
+percent=$(cat /sys/class/power_supply/BAT0/capacity)
+low='🪫'
+high='🔋'
+plugged='🔌'
 
-BATTERY=$HIGH
-[ $VAL -lt 20 ] && BATTERY=$LOW
+battery=$high
+[ $percent -le 20 ] && battery=$low
 
-printf "%s%d%%" $BATTERY $VAL
+status=$(grep POWER_SUPPLY_STATUS /sys/class/power_supply/BAT0/uevent | cut -d'=' -f2)
+[ "$status" = "Discharging" ] && plugged=''
+
+printf "%s%s%s%%" $plugged $battery $percent
