@@ -27,17 +27,6 @@ Dump http traffic to and from MYHOST, on port 80:
 tcpdump -i wlp58s0 -s 65535 -w output.pcap 'host MYHOST and (tcp port 80)'
 ```
 
-## IpTables
-
-Add an IpTables rule that reject every TCP packet to 127.0.0.1:40000:
-
-    sudo iptables -A INPUT -d 127.0.0.1 -p tcp --dport 40000 -j REJECT
-
-Remove the previous rule (note the `-D` instead of `-A`):
-
-    sudo iptables -D INPUT -d 127.0.0.1 -p tcp --dport 40000 -j REJECT
-
-
 ## Show which process is using a specific port
 
     sudo ss -lptn 'sport = :80'
