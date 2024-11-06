@@ -1,0 +1,20 @@
+#! /usr/bin/env python3
+#
+# usage: promptfiles file1 file2 file3 ...
+# this outputs a string that can be used as a context for GPT-3
+# with:
+# ## file1:
+#   <file1content>
+# ## file2:
+#  <file2content>
+#  etc...
+
+if __name__ == "__main__":
+    import sys
+
+    for file in sys.argv[1:]:
+        with open(file, "r") as f:
+            print(f"## {file}:")
+            print()
+            print(f.read())
+            print()
