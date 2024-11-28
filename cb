@@ -54,18 +54,12 @@ main() {
   [ $# -ge 1 -a -f "$1" ] && fromfile="$1"
   if [ -n "${fromfile}" ]; then
     xclip -sel cli < "${fromfile}" 
-    if [ $? -eq 0 ]; then
-      echo "cb: $fromfile content copied to clipboard" >&2
-    fi
     exit 0
   fi
 
   if ! [ -t 0 ]; then
     # script stdin is connected, forward it to the system clipboard
     xclip -sel cli
-    if [ $? -eq 0 ]; then
-      echo "cb: content copied to system clipboard" >&2
-    fi
     exit 0
   fi
 
@@ -73,7 +67,6 @@ main() {
     # script stdout is connected, clipboard content will be piped into whatever
     # it is connected to
     xclip -o -sel cli
-      echo "cb: clipboard content pasted" >&2
     exit 0
   fi
 }
