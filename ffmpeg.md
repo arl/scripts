@@ -14,3 +14,15 @@ ffmpeg -i $1 -map 0 -map -0:a:0 -c copy ./modified/$1
  - `-map 0:`      -> maps all streams from the input file
  - `-map -0:a:0:` -> excludes the first audio stream
  - `-c copy:`     -> copies all streams without re-encoding
+
+## Keep only one of the subtitles streams
+
+```
+ffmpeg -i $1 \
+  -map 0:v \
+  -map 0:a \
+  -map 0:3 \
+  -c copy \
+  -disposition:s:0 default \
+  ./modified/$1
+```
