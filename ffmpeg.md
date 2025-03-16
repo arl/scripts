@@ -26,3 +26,13 @@ ffmpeg -i $1 \
   -disposition:s:0 default \
   ./modified/$1
 ```
+
+## Reencode video stream to h264, let video and subtitles as-is
+
+```
+ffmpeg -i input.mkv \
+  -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p \
+  -c:a copy \
+  -c:s copy \
+  output.mkv
+```
