@@ -1,0 +1,14 @@
+#!/bin/bash
+# vim: set ft=sh ts=2 sw=2 sts=2 et sta:
+set -eu
+
+if [ $# -eq 3 ]; then
+  echo "usage: diffcover pass.prof fail.prof"
+  exit 0
+fi
+
+PROF1=$1
+PROF2=$2
+
+head -1 $PROF1; diff $PROF1 $PROF2 | sed -n 's/^> //p'
+go tool cover -html diff.prof
