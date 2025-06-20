@@ -2,6 +2,7 @@
 ## goversion manages installed go versions
 ## Examples:
 ##  - goversion list
+##  - goversion listremote
 ##  - goversion download go1.17
 ##  - goversion select go1.17
 ##  - goversion show
@@ -9,9 +10,12 @@
 ## Options:
 ##   -h, --help         Display this message.
 ##   show               Show current version.
-##   list               List installed go versions.
 ##   use/select         Select a go version among the installed ones.
 ##   install/download   Download a new go version.
+##   list               List installed go versions.
+##   listremote         List remote (installable) versions. Only the 
+##                      most 10 recent by default. All of them with 
+##                      "goversion listremote all".
 ##
 
 set -eu
@@ -32,7 +36,24 @@ list() {
     find "$gobindir" -follow -type f -executable \
         -regextype posix-extended \
         -regex "${goregex}" |
-    sort |
+    sort -V |
+        while read -r line; do
+            ver=$(basename "$line")
+            if [ "$ver" == "$current" ]; then
+                echo "${ver} <--"
+            else
+                echo "$ver"
+            fi
+        done
+}
+
+listremote() {
+    limitcmd=(head -n 10)
+    if [ $# -ge 1 ] && [ $1 == "all" ]; then
+        limitcmd=(tee)
+    fi
+    readonly current=$(show)
+    curl -s 'https://go.dev/dl/?mode=json&include=all' | jq -r '.[].version' | "${limitcmd[@]}" |
         while read -r line; do
             ver=$(basename "$line")
             if [ "$ver" == "$current" ]; then
@@ -73,16 +94,18 @@ main() {
         case $1 in
         show) shift; show ; exit 0;;
         list) shift; list ; exit 0;;
+        listremote) shift; listremote $*; exit 0;;
         install|download)
             shift
             [ $# -ge 1 ] || die "'$(basename "$0") download' needs an argument."
-            download "$1" ; exit 0
+            download "$1"
             exit 0
             ;;
         use|select)
             shift
             [ $# -ge 1 ] || die "'$(basename "$0") select' needs an argument."
-            vselect "$1" ; exit 0
+            vselect "$1"
+            exit 0
             ;;
         -h | --help) usage 2>&1 ;;
         *) usage "$1: unknown action" ;;
