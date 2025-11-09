@@ -14,6 +14,6 @@ battery=$high
 [ $percent -le 20 ] && battery=$low
 
 status=$(grep POWER_SUPPLY_STATUS /sys/class/power_supply/BAT0/uevent | cut -d'=' -f2)
-[ "$status" = "Discharging" ] && plugged=''
+[ "$status" = "Discharging" ] || [ "$status" = "Not charging" ] && plugged=''
 
 printf "%s#[fg=white]%s%s%%" $plugged $battery $percent
