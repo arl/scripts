@@ -1,34 +1,35 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 cheatsheets="$(dirname "$(realpath "$0")")/cheatsheets"
 
 function print_usage()
 {
-	exit_code=${1:-0}
-	user_msg=${2:-''}
-	if [ -n "$user_msg" ]; then
-		echo "cheat : no arguments given..."
-		echo
-	fi
-	echo -e "usage : cheat [OPTIONS] COMMAND\t"
-	echo "cheat prints cheat sheet of some famous unix commands, like awk, sed, ed, and screen"
-	echo
-	echo -e "  COMMAND may be:"
-	echo -e "\t\tawk\tfor awk cheat sheet"
-	echo -e "\t\tsed\tfor sed cheat sheet"
-	echo -e "\t\ted\tfor ed commands cheat sheet"
-	echo -e "\t\tvim\tfor vim command cheat sheet for programmers"
-	echo -e "\t\tscreen\tfor screen cheat sheet"
-	echo -e "\t\tbash\tfor bash cheat sheet"
-	echo -e "\t\tmake\tfor GNU make cheat sheet"
-	exit "$exit_code"
+    exit_code=${1:-0}
+    user_msg=${2:-''}
+    if [ -n "$user_msg" ]; then
+        echo "cheat : no arguments given..."
+        echo
+    fi
+    echo -e "usage : cheat [OPTIONS] COMMAND\t"
+    echo "cheat prints cheat sheet of some famous unix commands, like awk, sed, ed, and screen"
+    echo
+    echo -e "  COMMAND may be:"
+    echo -e "\t\tawk\tfor awk cheat sheet"
+    echo -e "\t\tbash\tfor bash cheat sheet"
+    echo -e "\t\tvscode\tfor vscode cheat sheet"
+    echo -e "\t\ted\tfor ed commands cheat sheet"
+    echo -e "\t\tmake\tfor GNU make cheat sheet"
+    echo -e "\t\tscreen\tfor screen cheat sheet"
+    echo -e "\t\tsed\tfor sed cheat sheet"
+    echo -e "\t\tvim\tfor vim command cheat sheet for programmers"
+    exit "$exit_code"
 }
 
 if [ $# -lt 1 ]; then
-	print_usage 1
+    print_usage 1
 fi
 if [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
-	print_usage 0
+    print_usage 0
 fi
 
 if [ ! -d "${cheatsheets}" ]; then
@@ -39,25 +40,24 @@ fi
 cmdname=$1
 
 case $cmdname in
-	awk)	cheatfile="${cheatsheets}/awk.cheat.sheet.txt" ;;
-	ed)	cheatfile="${cheatsheets}/ed.unix.text.editor.cheat.sheet.txt" ;;
-	sed)	cheatfile="${cheatsheets}/sed.stream.editor.cheat.sheet.txt" ;;
-	screen)	cheatfile="${cheatsheets}/screen.cheat.sheet.txt" ;;
-	vi|vim)	cheatfile="${cheatsheets}/vim-for-programmers.cheat.sheet.txt" ;;
-	bash)	cheatfile="${cheatsheets}/bash.txt" ;;
-	make)	cheatfile="${cheatsheets}/make.md" ;;
-	*)		echo "no cheat sheet found for $cmdname"
-			exit 3
-			;;
+    awk)             cheatfile="${cheatsheets}/awk.cheat.sheet.txt" ;;
+    bash)            cheatfile="${cheatsheets}/bash.txt" ;;
+    code|vscode)     cheatfile="${cheatsheets}/vscode.md" ;;
+    ed)              cheatfile="${cheatsheets}/ed.unix.text.editor.cheat.sheet.txt" ;;
+    make)            cheatfile="${cheatsheets}/make.md" ;;
+    screen)          cheatfile="${cheatsheets}/screen.cheat.sheet.txt" ;;
+    sed)             cheatfile="${cheatsheets}/sed.stream.editor.cheat.sheet.txt" ;;
+    vi|vim)          cheatfile="${cheatsheets}/vim-for-programmers.cheat.sheet.txt" ;;
+    *)               echo "no cheat sheet found for $cmdname"
+                     exit 3
+                     ;;
 esac
 
-function safewhich ()
-{
-	command -v "$1" > /dev/null 2>&1
+safewhich () {
+    command -v "$1" > /dev/null 2>&1
 }
 
-if safewhich glow && [[ $cheatfile == *.md ]]; then
-	glow -p -s dark "$cheatfile"
-else
-	less -f "$cheatfile"
-fi
+safewhich glow && glow -p -s dark "$cheatfile" && exit 0
+
+# fallback to less
+less -f "$cheatfile"
