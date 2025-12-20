@@ -1,0 +1,5 @@
+#!/bin/bash
+# hsearch prints the whole history from atuin on stdout.
+set -euo pipefail
+DB_PATH=$(atuin info | grep 'client db path' | cut -d'"' -f 2)
+sqlite3 -list "${DB_PATH}" "SELECT command FROM history"
