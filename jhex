@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Convert integers are end of line (trailing comma accepted) to hexadecimal,
+# unless they're already in hexa (i.e starts with $ or 0x).
+perl -pe 's/(?<!\$)\b(\d+)(,?)$/sprintf("0x%x%s", $1, $2)/e'
