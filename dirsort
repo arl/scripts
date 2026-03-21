@@ -1,8 +1,7 @@
 #! /bin/bash
-## Sorts the N biggest files in a directory by size (recursively).
-## Usage: dirsort [DIR] [N]
-##  DIR defaults to .
-##  N defaults to 10
+## Sorts the biggest files in the current directory by size (recursively).
+## Usage: dirsort [N]
+##  N: if given, show only the N biggest files. Otherwise show all.
 ## Options:
 ##   -h, --help    Display this message.
 ##
@@ -23,16 +22,11 @@ main() {
     esac
   done
 
-  DIR=.
-  N=10
-  if [ $# -gt 1 ]; then
-    DIR="${1}"
-    shift
-  fi
   if [ $# -eq 1 ]; then
-    N="${1}"
+    du -a . | sort -h | tail -n "$1"
+  else
+    du -a . | sort -h
   fi
-  du -a "${DIR}" | sort -n -r | head -n $N
 }
 
 main "$@"
