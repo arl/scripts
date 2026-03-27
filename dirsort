@@ -1,9 +1,10 @@
 #! /bin/bash
 ## Sorts the biggest files in the current directory by size (recursively).
-## Usage: dirsort [N]
+## Usage: dirsort [OPTIONS] [N]
 ##  N: if given, show only the N biggest files. Otherwise show all.
 ## Options:
 ##   -h, --help    Display this message.
+##   --raw         Show sizes in bytes instead of human-readable form.
 ##
 
 usage() {
@@ -13,19 +14,29 @@ usage() {
 } 2>/dev/null
 
 main() {
+  RAW=0
   while [ $# -gt 0 ]; do
     case $1 in
     (-h|--help) usage 2>&1;;
+    (--raw) RAW=1; shift;;
     (--) shift; break;;
     (-*) usage "$1: unknown option";;
     (*) break;;
     esac
   done
 
-  if [ $# -eq 1 ]; then
-    du -a . | sort -h | tail -n "$1"
+  if [ "$RAW" -eq 1 ]; then
+    DU_FLAGS="-a"
+    SORT_FLAGS="-n"
   else
-    du -a . | sort -h
+    DU_FLAGS="-ah"
+    SORT_FLAGS="-h"
+  fi
+
+  if [ $# -eq 1 ]; then
+    du $DU_FLAGS . | sort $SORT_FLAGS | tail -n "$1"
+  else
+    du $DU_FLAGS . | sort $SORT_FLAGS
   fi
 }
 
