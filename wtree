@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Usage: wtree <git url> (in an empty directory)
+
+REPO_URL=$1
+SCRIPT_NAME=$(basename "$0")
+
+if [ -z "$REPO_URL" ]; then
+    echo "Error: Missing repository URL."
+    echo "Usage: $0 <repo-url>"
+    exit 1
+fi
+
+# Check if the current directory is empty
+# We allow the script itself to be present
+FILES_IN_DIR=$(ls -A | grep -v "$SCRIPT_NAME")
+if [ ! -z "$FILES_IN_DIR" ]; then
+    echo "Error: Current directory is not empty!"
+    echo "To keep your worktree setup clean, please run this in a fresh folder."
+    exit 1
+fi
+
+echo "init git worktree setup"
+
+# Clone as bare into a hidden directory
+git clone --bare "$REPO_URL" .bare
+
+# Link the root to the bare repository
+echo "gitdir: ./.bare" > .git
+
+# This ensures 'git fetch' sees all branches from the server
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
+# 5. Fetch everything
+git fetch --all
+
+echo "✅ Setup complete!"
+echo "Next step: git worktree add main"
