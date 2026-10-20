@@ -10,7 +10,25 @@ append() {
   [[ -z ${seen[$f]} ]] && files+=("$f") && seen[$f]=1
 }
 
+read_stdin() {
+  local line
+  while IFS= read -r line || [[ -n $line ]]; do
+    line=${line%$'\r'}
+    [[ -f $line ]] && append "$line"
+  done
+}
+
+# Ingest standard input if piped, redirected, or if no arguments were provided
+if [[ ! -t 0 ]]; then
+  read_stdin
+fi
+
 for arg; do
+  if [[ $arg == - ]]; then
+    read_stdin
+    continue
+  fi
+
   if [[ $arg == -r ]]; then
     recurse=1
     continue
@@ -30,4 +48,3 @@ for f in "${files[@]}"; do
   printf "## %s\n" "$(realpath --relative-to=. "$f")"
   cat "$f"
 done
-
