@@ -89,7 +89,6 @@ You want to see the evolution of a range of lines through Git history
 
 ## Cherry-pick multiple commits at once
 
-
 Cherry-pick all commits from A to B (excluding A):
 
     git cherry-pick A^..B
@@ -110,3 +109,8 @@ Perform an interactive rebase, and insert the following line after each picked
 commit to sign-off:
 
     x git commit -S -s --amend --no-edit
+
+
+# Reset author for single commit
+
+    git commit --amend --reset-author
