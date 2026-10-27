@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 ## goversion manages installed go versions
 ## Examples:
 ##  - goversion list
@@ -17,6 +17,9 @@
 ##                      most 10 recent by default. All of them with 
 ##                      "goversion listremote all".
 ##
+## If go is not installed, the latest stable version is installed
+## automatically (into ~/sdk) the first time the script runs.
+##
 
 set -eu
 
@@ -28,6 +31,94 @@ usage() {
 
 safewhich() {
     command -v "$1" >/dev/null 2>&1
+}
+
+die() {
+    echo "$@" >&2
+    exit 1
+}
+
+sha256() {
+    if safewhich sha256sum; then
+        sha256sum "$1" | cut -d' ' -f1
+    else
+        shasum -a 256 "$1" | cut -d' ' -f1
+    fi
+}
+
+# Default GOPATH bin dir, usable when go is not installed yet.
+default_gobindir() {
+    local gp="${GOPATH:-$HOME/go}"
+    echo "${gp%%:*}/bin"
+}
+
+# Install the latest stable go release from go.dev into ~/sdk/<version>,
+# then expose it as $gobindir/<version> and $gobindir/go.
+install_latest() {
+    local tool os arch json ver file sha tmp sdkdir
+    for tool in curl jq tar; do
+        safewhich "$tool" || die "'$tool' is required to install go."
+    done
+    safewhich sha256sum || safewhich shasum || die "'sha256sum' or 'shasum' is required to install go."
+
+    case "$(uname -s)" in
+        Linux)  os=linux ;;
+        Darwin) os=darwin ;;
+        *) die "unsupported OS: $(uname -s)" ;;
+    esac
+    case "$(uname -m)" in
+        x86_64|amd64)   arch=amd64 ;;
+        aarch64|arm64)  arch=arm64 ;;
+        armv6l|armv7l)  arch=armv6l ;;
+        i386|i686)      arch=386 ;;
+        *) die "unsupported architecture: $(uname -m)" ;;
+    esac
+
+    echo "go not found, installing the latest stable version..." >&2
+
+    # Without include=all, only stable releases are listed, newest first.
+    json=$(curl -fsSL 'https://go.dev/dl/?mode=json') || die "cannot reach go.dev"
+    ver=$(jq -r '.[0].version' <<<"$json")
+    read -r file sha < <(jq -r --arg os "$os" --arg arch "$arch" \
+        '.[0].files[] | select(.os==$os and .arch==$arch and .kind=="archive")
+         | "\(.filename) \(.sha256)"' <<<"$json") || true
+    [ -n "${file:-}" ] || die "no $ver archive found for $os/$arch"
+
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+
+    echo "downloading $file..." >&2
+    curl -fSL -o "$tmp/$file" "https://go.dev/dl/$file" || die "download failed"
+    [ "$(sha256 "$tmp/$file")" == "$sha" ] || die "checksum mismatch for $file"
+
+    sdkdir="$HOME/sdk"
+    mkdir -p "$sdkdir" "$tmp/x" "$gobindir"
+    tar -C "$tmp/x" -xzf "$tmp/$file"
+    rm -rf "${sdkdir:?}/$ver"
+    mv "$tmp/x/go" "$sdkdir/$ver"
+    # Same marker golang.org/dl uses, so "goversion download $ver" later
+    # recognises this install instead of downloading it again.
+    touch "$sdkdir/$ver/.unpacked-success"
+
+    # Small wrapper so that $gobindir/<version> behaves like the
+    # golang.org/dl binaries (and "show"/"list" keep working).
+    printf '#!/bin/sh\nexec "%s/bin/go" "$@"\n' "$sdkdir/$ver" > "$gobindir/$ver"
+    chmod +x "$gobindir/$ver"
+
+    if [ -e "$gobindir/go" ] && [ ! -L "$gobindir/go" ]; then
+        die "refusing to overwrite $gobindir/go, it's not a symbolic link."
+    fi
+    ln -fs "$ver" "$gobindir/go"
+
+    trap - EXIT
+    rm -rf "$tmp"
+
+    export PATH="$gobindir:$PATH"
+    echo "installed $ver in $sdkdir/$ver" >&2
+    case ":$PATH_ORIG:" in
+        *":$gobindir:"*) ;;
+        *) echo "NOTE: add $gobindir to your PATH (e.g. export PATH=\"$gobindir:\$PATH\")." >&2 ;;
+    esac
 }
 
 list() {
@@ -84,11 +175,6 @@ vselect() {
     echo "success $(command -v go) is now $(go version)"
 }
 
-die() {
-    echo "$@"
-    exit 1
-}
-
 main() {
     while [ $# -gt 0 ]; do
         case $1 in
@@ -114,7 +200,17 @@ main() {
     usage
 }
 
-safewhich go || die "go binary not found"
-readonly gobindir="$(go env GOPATH)/bin"
+PATH_ORIG="$PATH"
+if safewhich go; then
+    gobindir="$(go env GOPATH)/bin"
+else
+    gobindir="$(default_gobindir)"
+    # Don't install anything just to print the help.
+    case "${1:-}" in
+        -h|--help|"") ;;
+        *) install_latest ;;
+    esac
+fi
+readonly gobindir
 
 main "$@"
