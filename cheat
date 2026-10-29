@@ -47,7 +47,7 @@ case $cmdname in
     make)            cheatfile="${cheatsheets}/make.md" ;;
     screen)          cheatfile="${cheatsheets}/screen.cheat.sheet.txt" ;;
     sed)             cheatfile="${cheatsheets}/sed.stream.editor.cheat.sheet.txt" ;;
-    vi|vim)          cheatfile="${cheatsheets}/vim-for-programmers.cheat.sheet.txt" ;;
+    vi|vim)          cheatfile="${cheatsheets}/neovim.md" ;;
     *)               echo "no cheat sheet found for $cmdname"
                      exit 3
                      ;;
