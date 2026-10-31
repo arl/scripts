@@ -3,7 +3,7 @@
 echo "If the colors blend smoothly, your terminal supports true colors:"
 
 awk 'BEGIN{
-    s="/\\/\\/\\/\\/\\"; s=s s s s s s s s;
+    s="         "; s=s s s s s s s s;
     for (colnum = 0; colnum<77; colnum++) {
         r = 255-(colnum*255/76);
         g = (colnum*510/76);
